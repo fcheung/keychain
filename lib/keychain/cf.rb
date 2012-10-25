@@ -92,9 +92,18 @@ module CF
         false
       end
     end
+    
+    def equals?(other)
+      if other.is_a?(CF::Base)
+        address == other.address
+      else
+        false
+      end
+    end
+    
     alias_method :==, :eql?
 
-    
+
   end
 
   attach_variable 'kCFBooleanTrue', :pointer
