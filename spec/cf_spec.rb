@@ -64,7 +64,7 @@ describe CF do
     end
 
     describe 'length' do
-      it 'should return the count of items in the dictionary'
+      it 'should return the count of items in the dictionary' do
         dict = CF::Dictionary.mutable
         dict['one'] = CF::Boolean::TRUE
         dict['two'] = CF::Boolean::TRUE
@@ -83,39 +83,60 @@ describe CF do
 
       describe '[]=' do
         it 'should raise when trying to store a non cf value' do
+          expect {subject[0] = 123}.to raise_error(TypeError)
         end
       end
 
       describe '<<' do
         it 'should raise when trying to store a non cf value' do
+          expect {subject << 123}.to raise_error(TypeError)
         end
-      end
-
-      describe '[]' do
-        it 'should return the typecast value at the index'
       end
 
     end
 
     describe 'immutable' do
-      it 'should raise if all of the array elements are not cf values'
-      it 'should return an immutable cfarray'
+      it 'should raise if all of the array elements are not cf values' do
+        expect {CF::Array.immutable([CF::Boolean::TRUE, 1])}.to raise_error(TypeError)
+      end
+
+      it 'should return an immutable cfarray' do
+        CF::Array.immutable([CF::Boolean::TRUE]).should be_a(CF::Array)
+      end
+      
+      context 'with an immutable array' do
+        subject { CF::Array.immutable([CF::Boolean::TRUE, CF::String.from_string('123')])}
+
+        describe '[]=' do
+          it 'should raise TypeError' do
+            expect {subject[0] = CF::Boolean::TRUE}.to raise_error(TypeError)
+          end
+        end
+
+        describe '<<' do
+          it 'should raise TypeError' do
+            expect {subject << CF::Boolean::TRUE}.to raise_error(TypeError)
+          end
+        end
+      end
+    end
+
+    context "with an array" do
+      subject { CF::Array.immutable([CF::Boolean::TRUE, CF::String.from_string('123')])}
+
       describe '[]' do
-        it 'should return the typecast value at the index'
+        it 'should return the typecast value at the index' do
+          subject[1].should == CF::String.from_string('123')
+        end
+      end
+
+
+      describe 'length' do
+        it 'should return the count of items in the dictionary' do
+          subject.length.should == 2
+        end
       end
     end
-
-    describe 'length' do
-      it 'should return the count of items in the dictionary'
-        array = CF::Array.mutable
-        array << CF::Boolean::TRUE
-        array << CF::Boolean::TRUE
-
-        array.length.should == 2
-      end
-    end
-
-
   end
 
 end

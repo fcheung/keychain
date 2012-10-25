@@ -25,7 +25,9 @@ module CF
     end
 
     def self.immutable(array)
-      raise "Array contains non cftype #{bad_element.inspect}" if bad_element = array.detect {|value| !value.is_a?(CF::Base)}
+      if bad_element = array.detect {|value| !value.is_a?(CF::Base)}
+        raise TypeError, "Array contains non cftype #{bad_element.inspect}" 
+      end
       m = FFI::MemoryPointer.new(:pointer, array.length)
       m.write_array_of_pointer(array)
       wrap(CF.CFArrayCreate(nil,m,array.length,CF::kCFTypeArrayCallBacks.to_ptr))
@@ -49,6 +51,7 @@ module CF
     end
 
     def <<(value)
+      raise TypeError, "instance is not mutable" unless mutable?
       self.class.check_cftype(value)
       CF.CFArrayAppendValue(self, value)
       self
