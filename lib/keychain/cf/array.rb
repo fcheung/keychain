@@ -17,11 +17,27 @@ module CF
   attach_function :CFArrayAppendValue, [:pointer, :pointer], :void
   attach_function :CFArrayGetCount, [:pointer], :cfindex
   
+  callback :each_applier, [:pointer, :pointer], :void
+
+  attach_function :CFArrayApplyFunction, [:cfarrayref, CF::Range.by_value, :each_applier, :pointer], :void
+
 
   class Array < Base
+    include Enumerable
     register_type("CFArray")
     def mutable?
       @mutable
+    end
+
+    def each(&block)
+      range = CF::Range.new
+      range[:location] = 0
+      range[:length] = length
+      callback = lambda do |value, _|
+        yield Base.typecast_wrap_retaining(value)
+      end
+      CF.CFArrayApplyFunction(self, range, callback, nil)
+      self
     end
 
     def self.immutable(array)

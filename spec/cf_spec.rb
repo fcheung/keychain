@@ -136,6 +136,25 @@ describe CF do
           subject.length.should == 2
         end
       end
+
+      describe 'each' do 
+        it 'should iterate over each value' do
+          values = []
+          subject.each do |v|
+            values << v
+          end
+          values[0].should == CF::Boolean::TRUE
+          values[1].should == CF::String.from_string('123')
+        end
+      end
+
+      it 'should be enumerable' do
+        values = {}
+        subject.each_with_index do |value, index|
+          values[index] = value
+        end
+        values.should == {0 => CF::Boolean::TRUE, 1 => CF::String.from_string('123')}
+      end
     end
   end
 
