@@ -85,13 +85,16 @@ module CF
       CF.CFHash(self)
     end
 
-    def ==(other)
+    def eql?(other)
       if other.is_a?(CF::Base)
         CF.CFEqual(self, other) != 0
       else
         false
       end
     end
+    alias_method :==, :eql?
+
+    
   end
 
   attach_variable 'kCFBooleanTrue', :pointer
