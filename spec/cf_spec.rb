@@ -76,6 +76,19 @@ describe CF do
         dict.length.should == 2
       end
     end
+
+    describe 'enumeration' do
+      subject { CF::Dictionary.mutable.tap {|dict| dict['1'] = CF::Boolean::TRUE; dict['2'] = CF::Boolean::FALSE}}
+
+      it 'should yield each key value pair in the dictionary' do
+        hash = {}
+        subject.each do |k,v|
+          hash[k] = v
+        end
+        hash.should == {CF::String.from_string('1') => CF::Boolean::TRUE, 
+                        CF::String.from_string('2') => CF::Boolean::FALSE}
+      end
+    end
   end
 
   describe CF::Array do

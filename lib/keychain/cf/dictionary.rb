@@ -27,11 +27,24 @@ module CF
   attach_function :CFDictionaryGetValue, [:cfdictionaryref, :pointer], :pointer
   attach_function :CFDictionaryGetCount, [:cfdictionaryref], :cfindex
 
+  callback :each_applier, [:pointer, :pointer, :pointer], :void
+
+  attach_function :CFDictionaryApplyFunction, [:cfdictionaryref, :each_applier, :pointer], :void
   class Dictionary < Base
     register_type("CFDictionary")
+    include Enumerable
     def self.mutable
       wrap(CF.CFDictionaryCreateMutable nil, 0, CF.kCFTypeDictionaryKeyCallBacks.to_ptr, CF.kCFTypeDictionaryValueCallBacks.to_ptr)
     end
+
+    def each
+      callback = lambda do |key, value, _|
+        yield [Base.typecast_wrap_retaining(key), Base.typecast_wrap_retaining(value)]
+      end
+      CF.CFDictionaryApplyFunction(self, callback, nil)
+      self
+    end
+
 
     def [](key)
       key = CF::String.from_string(key) if key.is_a?(::String)
