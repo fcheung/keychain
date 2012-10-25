@@ -7,7 +7,10 @@ module CF
 
   attach_function 'CFStringGetBytes', [:cfstringref, CF::Range.by_value, :uint, :uchar, :char, :buffer_out, :cfindex, :buffer_out], :cfindex
 
+  attach_function 'CFStringCompare', [:cfstringref, :cfstringref, :cfoptionflags], :cfcomparisonresult
+
   class String < Base
+    include Comparable
     register_type("CFString")
 
     UTF8 = 0x08000100 #From cfstring.h
@@ -21,6 +24,12 @@ module CF
     def length
       CF.CFStringGetLength(self)
     end
+
+    def <=>(other)
+      Base.check_cftype(other)
+      CF.CFStringCompare(self,other,0)
+    end
+
 
     def to_s
       max_size = CF.CFStringGetMaximumSizeForEncoding(length, UTF8)

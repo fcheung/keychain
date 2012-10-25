@@ -6,10 +6,14 @@ module CF
 
   if FFI::Platform::ARCH == 'x86_64'
     typedef :long_long, :cfindex
+    typedef :long_long, :cfcomparisonresult
+    typedef :ulong_long, :cfoptionflags
     typedef :ulong_long, :cftypeid
     typedef :ulong_long, :cfhashcode
   else
     typedef :long, :cfindex
+    typedef :long, :cfcomparisonresult
+    typedef :ulong, :cfoptionflags
     typedef :ulong, :cftypeid
     typedef :ulong, :cfhashcode
   end

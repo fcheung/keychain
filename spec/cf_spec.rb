@@ -18,6 +18,10 @@ describe CF do
         ruby_string.encoding.should == Encoding::UTF_8
       end
     end
+
+    it 'should be comparable' do
+      CF::String.from_string('aaa').should  <= CF::String.from_string('zzz')
+    end
   end
 
   describe CF::Data do
