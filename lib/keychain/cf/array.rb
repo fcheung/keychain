@@ -29,7 +29,7 @@ module CF
       @mutable
     end
 
-    def each(&block)
+    def each
       range = CF::Range.new
       range[:location] = 0
       range[:length] = length
