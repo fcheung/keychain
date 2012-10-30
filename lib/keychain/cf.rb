@@ -82,6 +82,11 @@ module CF
       self
     end
 
+    def release
+      CF.release(self)
+      self
+    end
+
     def release_on_gc
       ObjectSpace.define_finalizer(self, Releaser.new(address))
       self
@@ -135,3 +140,4 @@ require 'keychain/cf/string'
 require 'keychain/cf/data'
 require 'keychain/cf/array'
 require 'keychain/cf/dictionary'
+require 'keychain/cf/number'
