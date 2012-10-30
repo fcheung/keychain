@@ -1,1 +1,7 @@
 A set of ruby bindings for the OS X keychain, written using ffi
+
+
+CoreFoundation
+==============
+
+Some bindings for a subset of core foundation is included: various bits of CFString, CFData, CFArray, CFDictionary are available. In general the high level methods these classes provide will retain CF objects returned (or yielded in a block) and release them when the wrapper is garbage collected. If you copy the raw pointer value or use the C api directly then you will need to manage memory yourself
