@@ -15,6 +15,10 @@ module CF
       ptr = CF.CFDataGetBytePtr(self)
       ptr.read_string(CF.CFDataGetLength(self)).force_encoding(Encoding::ASCII_8BIT)
     end
+
+    def size
+      CF.CFDataGetLength(self)
+    end
   end
 end
 

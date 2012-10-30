@@ -25,12 +25,18 @@ describe CF do
   end
 
   describe CF::Data do
-
+    subject {CF::Data.from_string('A CF string')}
     describe '#to_s' do
       it 'should return a binary ruby string' do
-        ruby_string = CF::Data.from_string('A CF string').to_s
+        ruby_string = subject.to_s
         ruby_string.should == 'A CF string'
         ruby_string.encoding.should == Encoding::ASCII_8BIT
+      end
+    end
+
+    describe '#size' do
+      it 'should return the size in bytes of the cfdata' do
+        subject.size.should == 11
       end
     end
   end
