@@ -34,12 +34,12 @@ module CF
     register_type("CFDictionary")
     include Enumerable
     def self.mutable
-      wrap(CF.CFDictionaryCreateMutable nil, 0, CF.kCFTypeDictionaryKeyCallBacks.to_ptr, CF.kCFTypeDictionaryValueCallBacks.to_ptr)
+      new(CF.CFDictionaryCreateMutable nil, 0, CF.kCFTypeDictionaryKeyCallBacks.to_ptr, CF.kCFTypeDictionaryValueCallBacks.to_ptr).release_on_gc
     end
 
     def each
       callback = lambda do |key, value, _|
-        yield [Base.typecast_wrap_retaining(key), Base.typecast_wrap_retaining(value)]
+        yield [Base.typecast(key).retain.release_on_gc, Base.typecast(value).retain.release_on_gc]
       end
       CF.CFDictionaryApplyFunction(self, callback, nil)
       self
@@ -49,7 +49,7 @@ module CF
     def [](key)
       key = CF::String.from_string(key) if key.is_a?(::String)
       self.class.check_cftype(key)
-      self.class.typecast_wrap_retaining(CF.CFDictionaryGetValue(self, key))
+      self.class.typecast(CF.CFDictionaryGetValue(self, key)).retain.release_on_gc
     end
 
     def []=(key, value)

@@ -34,7 +34,7 @@ module CF
       range[:location] = 0
       range[:length] = length
       callback = lambda do |value, _|
-        yield Base.typecast_wrap_retaining(value)
+        yield Base.typecast(value).retain.release_on_gc
       end
       CF.CFArrayApplyFunction(self, range, callback, nil)
       self
@@ -46,17 +46,17 @@ module CF
       end
       m = FFI::MemoryPointer.new(:pointer, array.length)
       m.write_array_of_pointer(array)
-      wrap(CF.CFArrayCreate(nil,m,array.length,CF::kCFTypeArrayCallBacks.to_ptr))
+      new(CF.CFArrayCreate(nil,m,array.length,CF::kCFTypeArrayCallBacks.to_ptr)).release_on_gc
     end
 
     def self.mutable
-      result = wrap(CF.CFArrayCreateMutable nil, 0, CF::kCFTypeArrayCallBacks.to_ptr)
+      result = new(CF.CFArrayCreateMutable nil, 0, CF::kCFTypeArrayCallBacks.to_ptr).release_on_gc
       result.instance_variable_set(:@mutable, true)
       result
     end
 
     def [](index)
-      self.class.wrap_retaining(CF.CFArrayGetValueAtIndex(self, index))
+      self.class.new(CF.CFArrayGetValueAtIndex(self, index)).retain.release_on_gc
     end
 
     def []=(index, value)

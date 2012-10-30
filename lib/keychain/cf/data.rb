@@ -8,7 +8,7 @@ module CF
   class Data < Base
     register_type("CFData")
     def self.from_string(s)
-      wrap(CF.CFDataCreate(nil, s, s.bytesize))
+      new(CF.CFDataCreate(nil, s, s.bytesize)).release_on_gc
     end
 
     def to_s

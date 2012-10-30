@@ -1,5 +1,6 @@
 module CF
   typedef :pointer, :cfstringref
+
   attach_function 'CFStringCreateWithBytes', [:pointer, :buffer_in, :cfindex, :uint, :char], :cfstringref  
   attach_function 'CFStringGetBytes', [:cfstringref, :uint], :pointer
   attach_function 'CFStringGetMaximumSizeForEncoding', [:cfindex, :uint], :cfindex
@@ -18,7 +19,7 @@ module CF
 
     def self.from_string(s)
       s_utf = s.encode('UTF-8')
-      wrap(CF.CFStringCreateWithBytes(nil, s_utf, s_utf.bytesize, UTF8, 0))
+      new(CF.CFStringCreateWithBytes(nil, s_utf, s_utf.bytesize, UTF8, 0)).release_on_gc
     end
 
     def length

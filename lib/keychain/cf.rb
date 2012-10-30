@@ -35,9 +35,21 @@ module CF
   attach_function 'CFCopyDescription', [:cftyperef], :cftyperef
   attach_function 'CFGetTypeID', [:cftyperef], :cftypeid
 
-  class Base < FFI::AutoPointer  
+  class Base < FFI::Pointer  
     @@type_map = {}
 
+    class Releaser
+      def initialize(address)
+        @address  = address
+      end
+
+      def call *ignored
+        if @address
+          CF.release(FFI::Pointer.new(@address))
+          @address = new
+        end
+      end
+    end
 
     class << self
       def check_cftype(cftyperef)
@@ -50,14 +62,9 @@ module CF
       end
 
 
-      def typecast_wrap(cftyperef)
+      def typecast(cftyperef)
         klass = klass_from_cf_type cftyperef
-        klass.wrap(cftyperef)
-      end
-
-      def typecast_wrap_retaining(cftyperef)
-        klass = klass_from_cf_type cftyperef
-        klass.wrap_retaining(cftyperef)
+        klass.new(cftyperef)
       end
 
       def klass_from_cf_type cftyperef
@@ -68,17 +75,21 @@ module CF
         klass
       end
 
-      def wrap(cftyperef)
-        new(cftyperef, CF.method(:release))
-      end
+    end
 
-      def wrap_retaining(cftyperef)
-        new(CF.retain(cftyperef), CF.method(:release))
-      end
+    def retain
+      CF.retain(self)
+      self
+    end
+
+    def release_on_gc
+      ObjectSpace.define_finalizer(self, Releaser.new(address))
+      self
     end
 
     def inspect
-      CF::String.wrap(CF.CFCopyDescription(self)).to_s
+      cf = CF::String.new(CF.CFCopyDescription(self))
+      cf.to_s.tap {cf.release}
     end
 
     def hash
@@ -111,8 +122,8 @@ module CF
   attach_function 'CFBooleanGetValue', [:pointer], :bool
   class Boolean < Base
     register_type("CFBoolean")
-    TRUE = wrap_retaining(CF.kCFBooleanTrue)
-    FALSE = wrap_retaining(CF.kCFBooleanFalse)
+    TRUE = new(CF.kCFBooleanTrue).retain.release_on_gc
+    FALSE = new(CF.kCFBooleanFalse).retain.release_on_gc
     def value
       CF.CFBooleanGetValue(self) != 0
     end
