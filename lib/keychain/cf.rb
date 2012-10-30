@@ -108,11 +108,14 @@ module CF
 
   attach_variable 'kCFBooleanTrue', :pointer
   attach_variable 'kCFBooleanFalse', :pointer
-
+  attach_function 'CFBooleanGetValue', [:pointer], :bool
   class Boolean < Base
     register_type("CFBoolean")
     TRUE = wrap_retaining(CF.kCFBooleanTrue)
     FALSE = wrap_retaining(CF.kCFBooleanFalse)
+    def value
+      CF.CFBooleanGetValue(self) != 0
+    end
   end
 
 end

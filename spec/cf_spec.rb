@@ -3,6 +3,16 @@ require 'spec_helper'
 describe CF do
 
 
+  describe CF::Boolean do
+    describe 'value' do
+      it 'should return true for CF::Boolean::TRUE' do
+        CF::Boolean::TRUE.value.should == true
+      end
+      it 'should return false for CF::Boolean::FALSE' do
+        CF::Boolean::FALSE.value.should == true
+      end
+    end
+  end
   describe CF::String do
 
     describe 'from_string' do
