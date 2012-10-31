@@ -124,7 +124,7 @@ module CF
 
   attach_variable 'kCFBooleanTrue', :pointer
   attach_variable 'kCFBooleanFalse', :pointer
-  attach_function 'CFBooleanGetValue', [:pointer], :bool
+  attach_function 'CFBooleanGetValue', [:pointer], :uchar
   class Boolean < Base
     register_type("CFBoolean")
     TRUE = new(CF.kCFBooleanTrue).retain.release_on_gc

@@ -9,7 +9,7 @@ describe CF do
         CF::Boolean::TRUE.value.should == true
       end
       it 'should return false for CF::Boolean::FALSE' do
-        CF::Boolean::FALSE.value.should == true
+        CF::Boolean::FALSE.value.should == false
       end
     end
   end
