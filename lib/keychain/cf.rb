@@ -132,6 +132,8 @@ module CF
     def value
       CF.CFBooleanGetValue(self) != 0
     end
+
+    alias_method :to_ruby, :value
   end
 
 end

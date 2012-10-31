@@ -19,6 +19,8 @@ module CF
     def size
       CF.CFDataGetLength(self)
     end
+
+    alias_method :to_ruby, :to_s
   end
 end
 

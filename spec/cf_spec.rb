@@ -12,6 +12,13 @@ describe CF do
         CF::Boolean::FALSE.value.should == false
       end
     end
+
+    describe 'to_ruby' do
+      it 'should behave like value' do
+        CF::Boolean::FALSE.to_ruby.should == false
+      end
+    end
+
   end
   describe CF::String do
 
@@ -26,6 +33,13 @@ describe CF do
         ruby_string = CF::String.from_string('A CF string').to_s
         ruby_string.should == 'A CF string'
         ruby_string.encoding.should == Encoding::UTF_8
+      end
+    end
+
+    describe 'to_ruby' do
+      it 'should behave like to_s' do
+        CF::String.from_string('A CF string').to_ruby.should == 'A CF string'
+        CF::String.from_string('A CF string').to_ruby.encoding.should == Encoding::UTF_8
       end
     end
 
@@ -47,6 +61,13 @@ describe CF do
     describe '#size' do
       it 'should return the size in bytes of the cfdata' do
         subject.size.should == 11
+      end
+    end
+
+    describe 'to_ruby' do
+      it 'should behave like to_s' do
+        subject.to_ruby.should == 'A CF string'
+        subject.to_ruby.encoding.should == Encoding::ASCII_8BIT
       end
     end
   end
@@ -206,7 +227,12 @@ describe CF do
       end
     end
 
-
+    describe 'to_ruby' do
+      it 'should behave like to_time' do
+        t = CF::Date.from_time(Time.now).to_ruby
+        t.should be_a(Time)
+      end
+    end
   end
 
 
@@ -239,5 +265,6 @@ describe CF do
         CF::Number.from_f(3.1415).to_f.should be_within(0.0000001).of(3.14150)
       end
     end
+
   end
 end

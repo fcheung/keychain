@@ -52,6 +52,9 @@ module CF
 
       buffer.read_string(bytes_used).force_encoding(Encoding::UTF_8)
     end
+
+    alias_method :to_ruby, :to_s
+
   end
 
 end

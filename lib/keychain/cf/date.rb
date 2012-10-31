@@ -14,5 +14,7 @@ module CF
     def to_time
       Time.at(CF.CFDateGetAbsoluteTime(self) + CF.kCFAbsoluteTimeIntervalSince1970)
     end
+
+    alias_method :to_ruby, :to_time
   end
 end
