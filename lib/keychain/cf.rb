@@ -122,6 +122,10 @@ module CF
     def to_ruby
       self
     end
+
+    def to_cf
+      self
+    end
   end
 
   attach_variable 'kCFBooleanTrue', :pointer
@@ -146,3 +150,4 @@ require 'keychain/cf/array'
 require 'keychain/cf/dictionary'
 require 'keychain/cf/number'
 require 'keychain/cf/date'
+require 'keychain/cf/extensions'
