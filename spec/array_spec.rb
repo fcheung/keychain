@@ -52,6 +52,7 @@ describe CF::Array do
 
     describe '[]' do
       it 'should return the typecast value at the index' do
+        subject[1].should be_a(CF::String)
         subject[1].should == CF::String.from_string('123')
       end
     end

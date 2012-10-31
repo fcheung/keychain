@@ -56,7 +56,7 @@ module CF
     end
 
     def [](index)
-      self.class.new(CF.CFArrayGetValueAtIndex(self, index)).retain.release_on_gc
+      Base.typecast(CF.CFArrayGetValueAtIndex(self, index)).retain.release_on_gc
     end
 
     def []=(index, value)
