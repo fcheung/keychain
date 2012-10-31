@@ -129,8 +129,8 @@ module CF
   attach_function 'CFBooleanGetValue', [:pointer], :uchar
   class Boolean < Base
     register_type("CFBoolean")
-    TRUE = new(CF.kCFBooleanTrue).retain.release_on_gc
-    FALSE = new(CF.kCFBooleanFalse).retain.release_on_gc
+    TRUE = new(CF.kCFBooleanTrue)
+    FALSE = new(CF.kCFBooleanFalse)
     def value
       CF.CFBooleanGetValue(self) != 0
     end
