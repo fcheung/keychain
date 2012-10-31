@@ -20,9 +20,9 @@ module CF
     :kCFNumberMaxType,16
   ]
 
-  attach_function 'CFNumberGetValue', [:cfnumberref, :cf_number_type, :pointer], :bool
+  attach_function 'CFNumberGetValue', [:cfnumberref, :cf_number_type, :pointer], :uchar
   attach_function 'CFNumberCreate', [:pointer, :cf_number_type, :pointer], :cfnumberref
-
+  attach_function 'CFNumberIsFloatType', [:pointer], :uchar
   class Number < Base
     register_type 'CFNumber'
     def self.from_f(float)
@@ -37,9 +37,17 @@ module CF
       new(CF.CFNumberCreate(nil, :kCFNumberSInt64Type, p)).release_on_gc
     end
 
+    def to_ruby
+      if CF.CFNumberIsFloatType(self) == 0
+        to_i
+      else
+        to_f
+      end
+    end
+
     def to_i
       p = FFI::MemoryPointer.new(:int64)
-      if CF.CFNumberGetValue(self, :kCFNumberSInt64Type, p)
+      if CF.CFNumberGetValue(self, :kCFNumberSInt64Type, p) != 0
         p.read_int64
       else
         raise "CF.CFNumberGetValue failed to convert #{self.inspect} to kCFNumberSInt64Type"
@@ -48,7 +56,7 @@ module CF
 
     def to_f
       p = FFI::MemoryPointer.new(:double)
-      if CF.CFNumberGetValue(self, :kCFNumberDoubleType, p)
+      if CF.CFNumberGetValue(self, :kCFNumberDoubleType, p) != 0
         p.read_double
       else
         raise "CF.CFNumberGetValue failed to convert #{self.inspect} to kCFNumberDoubleType"
