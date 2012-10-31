@@ -73,6 +73,10 @@ module CF
       self
     end
 
+    def to_ruby
+      collect(&:to_ruby)
+    end
+
     alias_method :push, :<<
 
     def length

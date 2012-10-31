@@ -63,6 +63,10 @@ module CF
     def length
       CF.CFDictionaryGetCount(self)
     end
+
+    def to_ruby
+      Hash[collect {|k,v| [k.to_ruby, v.to_ruby]}]
+    end
     alias_method :size, :length
   end
 end

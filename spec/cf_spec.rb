@@ -126,6 +126,15 @@ describe CF do
                         CF::String.from_string('2') => CF::Boolean::FALSE}
       end
     end
+
+    describe 'to_ruby' do
+      subject { CF::Dictionary.mutable.tap {|dict| dict['1'] = CF::Boolean::TRUE; dict['2'] = CF::Array.immutable([CF::Boolean::FALSE])}}
+
+      it 'should return a ruby hash where keys and values have been converted to ruby types' do
+        subject.to_ruby.should == {'1' => true, '2' => [false]}
+      end
+    end
+
   end
 
   describe CF::Array do
@@ -188,6 +197,12 @@ describe CF do
       describe 'length' do
         it 'should return the count of items in the dictionary' do
           subject.length.should == 2
+        end
+      end
+
+      describe 'to_ruby' do
+        it 'should return the result of calling to ruby on its contents' do
+          subject.to_ruby.should == [true, '123']
         end
       end
 
