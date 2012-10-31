@@ -49,7 +49,8 @@ module CF
     def [](key)
       key = CF::String.from_string(key) if key.is_a?(::String)
       self.class.check_cftype(key)
-      self.class.typecast(CF.CFDictionaryGetValue(self, key)).retain.release_on_gc
+      raw = CF.CFDictionaryGetValue(self, key)
+      raw.null? ? nil : self.class.typecast(raw).retain.release_on_gc
     end
 
     def []=(key, value)

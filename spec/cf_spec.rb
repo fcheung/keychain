@@ -81,6 +81,11 @@ describe CF do
 
     describe 'hash access' do
       subject {CF::Dictionary.mutable}
+
+      it 'should return nil when the key does not exist' do
+        subject['doesnotexist'].should be_nil
+      end
+
       it 'should raise when trying to store a non cf value' do
         expect {subject[CF::String.from_string('key')]=1}.to raise_error(TypeError)
       end
