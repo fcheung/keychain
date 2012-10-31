@@ -119,7 +119,9 @@ module CF
     
     alias_method :==, :eql?
 
-
+    def to_ruby
+      self
+    end
   end
 
   attach_variable 'kCFBooleanTrue', :pointer
