@@ -7,6 +7,7 @@ module CF
   attach_variable :kCFAbsoluteTimeIntervalSince1970, :double
 
   class Date < Base
+    register_type 'CFDate'
     def self.from_time(time)
       new(CF.CFDateCreate(nil, time.to_f - CF.kCFAbsoluteTimeIntervalSince1970,)).release_on_gc
     end
