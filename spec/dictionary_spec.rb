@@ -38,6 +38,15 @@ describe CF::Dictionary do
     end
   end
 
+  describe 'merge!' do
+    subject { CF::Dictionary.mutable.tap {|dict| dict['1'] = CF::Boolean::TRUE; dict['2'] = CF::Boolean::FALSE}}
+    it 'should merge the argument into the receiver' do
+      argument = {'1' => false, 'foo' => 'bar'}.to_cf
+      subject.merge! argument
+      subject.to_ruby.should == {'1' => false, '2' => false, 'foo' => 'bar'}
+    end
+  end
+
   describe 'length' do
     it 'should return the count of items in the dictionary' do
       dict = CF::Dictionary.mutable

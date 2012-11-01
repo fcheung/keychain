@@ -61,6 +61,12 @@ module CF
       value
     end
 
+    def merge!(other)
+      other.each do |k,v|
+        self[k] = v
+      end
+    end
+
     def length
       CF.CFDictionaryGetCount(self)
     end
