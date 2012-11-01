@@ -165,12 +165,12 @@ class Keychain < Sec::Base
   def path
     out_buffer = FFI::MemoryPointer.new(:uchar, 2048)
     io_size = FFI::MemoryPointer.new(:uint32)
-    io_size.write_uint32(out_buffer.size)
+    io_size.put_uint32(0, out_buffer.size)
 
     status = Sec.SecKeychainGetPath(self,io_size, out_buffer)
     Sec.check_osstatus(status)
 
-    out_buffer.read_string(io_size.read_uint32).force_encoding(Encoding::UTF_8)
+    out_buffer.read_string(io_size.get_uint32(0)).force_encoding(Encoding::UTF_8)
   end
 
   # Locks the keychain
@@ -212,7 +212,7 @@ class Keychain < Sec::Base
     out = FFI::MemoryPointer.new(:uint32)
     status = Sec.SecKeychainGetStatus(self,out);
     Sec.check_osstatus status
-    (out.read_uint32 & Sec.enum_value(enum_name)).nonzero?
+    (out.get_uint32(0) & Sec.enum_value(enum_name)).nonzero?
   end
     
   def get_settings

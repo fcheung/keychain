@@ -33,7 +33,7 @@ module CF
 
     def self.from_i(int)
       p = FFI::MemoryPointer.new(:int64)
-      p.write_int64(int.to_i)
+      p.put_int64(0,int.to_i)
       new(CF.CFNumberCreate(nil, :kCFNumberSInt64Type, p)).release_on_gc
     end
 
@@ -48,7 +48,7 @@ module CF
     def to_i
       p = FFI::MemoryPointer.new(:int64)
       if CF.CFNumberGetValue(self, :kCFNumberSInt64Type, p) != 0
-        p.read_int64
+        p.get_int64 0
       else
         raise "CF.CFNumberGetValue failed to convert #{self.inspect} to kCFNumberSInt64Type"
       end
