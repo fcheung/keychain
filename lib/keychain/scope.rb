@@ -30,8 +30,8 @@ class Keychain::Scope
   #
   # @param [Array] The maximum number of items to return
   # @return [Keychain::Scope] Returns self as a convenience. The scope is modified in place
-  def in keychains
-    @keychains = keychains
+  def in *keychains
+    @keychains = keychains.flatten
     self
   end
 

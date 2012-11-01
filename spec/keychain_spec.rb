@@ -136,7 +136,7 @@ describe Keychain do
 
         context 'when a subset of keychains is specified' do
           it 'should return items from those keychains' do
-            Keychain.send(subject).where(search_arguments_with_multiple_results).in([@keychain_1, @keychain_2]).all.length.should == 2
+            Keychain.send(subject).where(search_arguments_with_multiple_results).in(@keychain_1, @keychain_2).all.length.should == 2
           end
         end
       end
