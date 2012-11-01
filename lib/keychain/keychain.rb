@@ -69,6 +69,8 @@ class Keychain < Sec::Base
 
     # Opens the keychain file at the specified path and adds it to the keychain search path ( SecKeychainOpen )
     #
+    # Will succeed even if the file doesn't exists (however most operations on the keychain will then fail)
+    #
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCopyDefault
     # @param [String] path to the keychain file
     # @return [Keychain] a keychain object
