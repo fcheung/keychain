@@ -56,7 +56,7 @@ describe Keychain do
       end
 
       it 'should raise on invalid password' do
-        expect {@keychain.unlock! 'badpassword'}.should raise_error(Keychain::AuthFailedError)
+        expect {@keychain.unlock! 'badpassword'}.to raise_error(Keychain::AuthFailedError)
       end
 
       it 'should unlock on valid password' do
