@@ -35,18 +35,18 @@ module CF
   attach_function 'CFCopyDescription', [:cftyperef], :cftyperef
   attach_function 'CFGetTypeID', [:cftyperef], :cftypeid
 
-  class Base < FFI::Pointer  
+  class Base  
     @@type_map = {}
 
     class Releaser
-      def initialize(address)
-        @address  = address
+      def initialize(ptr)
+        @address  = ptr.address
       end
 
       def call *ignored
-        if @address
-          CF.release(FFI::Pointer.new(@address))
-          @address = new
+        if @address != 0
+          CF.release(@address)
+          @address = 0
         end
       end
     end
@@ -77,6 +77,18 @@ module CF
 
     end
 
+    def initialize(ptr)
+      @ptr = FFI::Pointer.new(ptr)
+    end
+
+    def to_ptr
+      @ptr
+    end
+
+    def ptr= ptr
+      @ptr = ptr
+    end
+
     def retain
       CF.retain(self)
       self
@@ -88,7 +100,7 @@ module CF
     end
 
     def release_on_gc
-      ObjectSpace.define_finalizer(self, Releaser.new(address))
+      ObjectSpace.define_finalizer(@ptr, Releaser.new(@ptr))
       self
     end
 
