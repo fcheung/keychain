@@ -1,2 +1,8 @@
 require 'ffi'
 require 'keychain/cf'
+require 'keychain/sec'
+require 'keychain/keychain'
+require 'keychain/error'
+require 'keychain/item'
+require 'keychain/scope'
+require 'keychain/protocols'
