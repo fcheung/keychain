@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.date = %q{2012-11-03}
   s.description = %q{Ruby wrapper for OS X's keychain }
   s.email = %q{frederick.cheung@gmail.com}
-  s.files += Dir["lib/*.rb"]
+  s.files += Dir["lib/**/*.rb"]
   s.files += Dir["spec/**/*"]
   s.files += ['README']  
   s.license = 'MIT'
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.2'
 
   s.add_runtime_dependency "ffi"
+  s.add_runtime_dependency "corefoundation", "~>0.1.3"
   s.add_development_dependency "rspec", "~>2.10"
   s.add_development_dependency "rake"
 end

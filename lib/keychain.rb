@@ -1,8 +1,72 @@
 require 'ffi'
-require 'keychain/cf'
+require 'corefoundation'
 require 'keychain/sec'
 require 'keychain/keychain'
 require 'keychain/error'
 require 'keychain/item'
 require 'keychain/scope'
 require 'keychain/protocols'
+
+module Keychain
+  class << self
+    # creates a new keychain file and adds it to the keychain search path ( SecKeychainCreate )
+    #
+    # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCreate
+    # @param [String] The path to the keychain file to create
+    #   If it is not absolute it is interpreted relative to ~/Library/Keychains
+    # @param [String] The password to use for the keychain
+    # @return [Keychain] a keychain object representing the newly created keychain
+
+    def create(path, password)
+      password = password.encode(Encoding::UTF_8)
+      path = path.encode(Encoding::UTF_8)
+
+      out_buffer = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecKeychainCreate(path, password.bytesize, FFI::MemoryPointer.from_string(password), 0,
+                                          nil, out_buffer)
+
+      Sec.check_osstatus(status)
+      Keychain.new(out_buffer.read_pointer).release_on_gc
+    end
+
+    # Gets the default keychain object ( SecKeychainCopyDefault )
+    #
+    # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCopyDefault
+    # @return [Keychain] a keychain object
+    def default
+      out_buffer = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecKeychainCopyDefault(out_buffer);
+      Sec.check_osstatus(status)
+
+      Keychain.new(out_buffer.read_pointer).release_on_gc
+    end
+
+    # Opens the keychain file at the specified path and adds it to the keychain search path ( SecKeychainOpen )
+    #
+    # Will succeed even if the file doesn't exists (however most operations on the keychain will then fail)
+    #
+    # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCopyDefault
+    # @param [String] path to the keychain file
+    # @return [Keychain] a keychain object
+    def open(path)
+      out_buffer = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecKeychainOpen(path,out_buffer);
+      Sec.check_osstatus(status)
+      Keychain.new(out_buffer.read_pointer).release_on_gc
+    end
+
+    # Returns a scope for internet passwords contained in all keychains
+    #
+    # @return [Keychain::Scope] a new scope object
+    def internet_passwords
+      Scope.new(Sec::Classes::INTERNET)
+    end
+
+    # Returns a scope for generic passwords in all keychains
+    #
+    # @return [Keychain::Scope] a new scope object
+    def generic_passwords
+      Scope.new(Sec::Classes::GENERIC)
+    end
+  end
+end
