@@ -88,10 +88,3 @@ Compatibility
 Requires ruby 1.9 due to use of encoding related methods. Should work in MRI and jruby. Not compatible with rubinius due to rubinius' ffi implemenation
 not supporting certain features
 
-
-CoreFoundation
-==============
-
-Some bindings for a subset of core foundation is included: various bits of CFString, CFData, CFArray, CFDictionary are available. In general the high level methods these classes provide will retain CF objects returned (or yielded in a block) and release them when the wrapper is garbage collected. If you copy the raw pointer value or use the C api directly then you will need to manage memory yourself.
-
-Although the CF collection classes can store arbitrary pointer sized values this wrapper only supports storing CFTypes.
