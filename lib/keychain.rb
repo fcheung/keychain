@@ -6,16 +6,16 @@ require 'keychain/error'
 require 'keychain/item'
 require 'keychain/scope'
 require 'keychain/protocols'
-
+# top level constant for this library
 module Keychain
   class << self
     # creates a new keychain file and adds it to the keychain search path ( SecKeychainCreate )
     #
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCreate
-    # @param [String] The path to the keychain file to create
+    # @param [String] path The path to the keychain file to create
     #   If it is not absolute it is interpreted relative to ~/Library/Keychains
-    # @param [String] The password to use for the keychain
-    # @return [Keychain] a keychain object representing the newly created keychain
+    # @param [String] password The password to use for the keychain
+    # @return [Keychain::Keychain] a keychain object representing the newly created keychain
 
     def create(path, password)
       password = password.encode(Encoding::UTF_8)
@@ -32,7 +32,7 @@ module Keychain
     # Gets the default keychain object ( SecKeychainCopyDefault )
     #
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCopyDefault
-    # @return [Keychain] a keychain object
+    # @return [Keychain::Keychain] a keychain object
     def default
       out_buffer = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainCopyDefault(out_buffer);
@@ -46,8 +46,8 @@ module Keychain
     # Will succeed even if the file doesn't exists (however most operations on the keychain will then fail)
     #
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCopyDefault
-    # @param [String] path to the keychain file
-    # @return [Keychain] a keychain object
+    # @param [String] path Path to the keychain file
+    # @return [Keychain::Keychain] a keychain object
     def open(path)
       out_buffer = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainOpen(path,out_buffer);

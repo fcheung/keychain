@@ -1,3 +1,6 @@
+# A scope that represents the search for a keychain item
+#
+#
 class Keychain::Scope
   def initialize(kind, keychain=nil)
     @kind = kind
@@ -10,7 +13,24 @@ class Keychain::Scope
   #
   # The set of possible keys for conditions is given by Sec::ATTR_MAP.values. The legal values for the :protocol key are the constants in
   # Keychain::Protocols
-  # @param [Hash] conditions to add
+  #
+  # @param [Hash] conditions options to create the item with
+  # @option conditions [String] :account The account (user name)
+  # @option conditions [String] :comment A free text comment about the item
+  # @option conditions [Integer] :creator the item's creator, as the unsigned integer representation of a 4 char code
+  # @option conditions [String] :generic generic passwords can have a generic data attribute
+  # @option conditions [String] :invisible whether the item should be invisible
+  # @option conditions [String] :negative A negative item records that the user decided to never save a password
+  # @option conditions [String] :label A label for the item (Shown in keychain access)
+  # @option conditions [String] :path The path the password is associated with (internet passwords only)
+  # @option conditions [String] :port The path the password is associated with (internet passwords only)
+  # @option conditions [String] :port The protocol the password is associated with (internet passwords only)
+  #   Should be one of the constants at Keychain::Protocols  
+  # @option conditions [String] :domain the domain the password is associated with (internet passwords only)
+  # @option conditions [String] :server the host name the password is associated with (internet passwords only)
+  # @option conditions [String] :service the service the password is associated with (generic passwords only)
+  # @option conditions [Integer] :type the item's type, as the unsigned integer representation of a 4 char code
+  #
   # @return [Keychain::Scope] Returns self as a convenience. The scope is modified in place
   def where(conditions)
     @conditions.merge! conditions
@@ -19,7 +39,7 @@ class Keychain::Scope
 
   # Sets the number of items returned by the scope
   #
-  # @param [Integer] The maximum number of items to return
+  # @param [Integer] value The maximum number of items to return
   # @return [Keychain::Scope] Returns self as a convenience. The scope is modified in place
   def limit value
     @limit = value
@@ -28,14 +48,14 @@ class Keychain::Scope
 
   # Set the list of keychains to search
   #
-  # @param [Array] The maximum number of items to return
+  # @param [Array<Keychain::Keychain>] keychains The maximum number of items to return
   # @return [Keychain::Scope] Returns self as a convenience. The scope is modified in place
   def in *keychains
     @keychains = keychains.flatten
     self
   end
 
-  # Returns the first matching item or nil
+  # Returns the first matching item in the scope 
   #
   # @return [Keychain::Item, nil]
   def first
@@ -52,6 +72,26 @@ class Keychain::Scope
     execute query
   end
 
+  # Creates a new keychain item
+  #
+  # @param [Hash] attributes options to create the item with
+  # @option attributes [String] :account The account (user name)
+  # @option attributes [String] :comment A free text comment about the item
+  # @option attributes [Integer] :creator the item's creator, as the unsigned integer representation of a 4 char code
+  # @option attributes [String] :generic generic passwords can have a generic data attribute
+  # @option attributes [String] :invisible whether the item should be invisible
+  # @option attributes [String] :negative A negative item records that the user decided to never save a password
+  # @option attributes [String] :label A label for the item (Shown in keychain access)
+  # @option attributes [String] :path The path the password is associated with (internet passwords only)
+  # @option attributes [String] :port The path the password is associated with (internet passwords only)
+  # @option attributes [String] :port The protocol the password is associated with (internet passwords only)
+  #   Should be one of the constants at Keychain::Protocols  
+  # @option attributes [String] :domain the domain the password is associated with (internet passwords only)
+  # @option attributes [String] :server the host name the password is associated with (internet passwords only)
+  # @option attributes [String] :service the service the password is associated with (generic passwords only)
+  # @option attributes [Integer] :type the item's type, as the unsigned integer representation of a 4 char code
+  #
+  # @return [Keychain::Item]
   def create(attributes)
     raise "You must specify a password" unless attributes[:password]
 

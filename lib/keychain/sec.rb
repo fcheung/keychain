@@ -1,3 +1,4 @@
+# The module to which FFI attaches constants
 module Sec
   extend FFI::Library
   ffi_lib '/System/Library/Frameworks/Security.framework/Security'
@@ -54,6 +55,8 @@ module Sec
 
   
 
+  # map of kSecAttr* constants to the corresponding ruby name for the attribute
+  # Used in {Keychain::Item#attributes}}
   ATTR_MAP = {
     CF::Base.typecast(kSecAttrAccess) => :access,
     CF::Base.typecast(kSecAttrAccount) => :account,
@@ -77,41 +80,70 @@ module Sec
     CF::Base.typecast(kSecClass)    => :klass
   }
 
+  # Inverse of {ATTR_MAP}
   INVERSE_ATTR_MAP = ATTR_MAP.invert
 
+  # Query options for use with SecCopyMatching, SecItemUpdate
+  #
   module Query
+    #key identifying the class of an item (kSecClass)
     CLASS = CF::Base.typecast(Sec.kSecClass)
+    #key speciying the list of keychains to search (kSecMatchSearchList)
     SEARCH_LIST = CF::Base.typecast(Sec.kSecMatchSearchList)
+    #key indicating the list of specific keychain items to the scope the search to
     ITEM_LIST = CF::Base.typecast(Sec.kSecMatchItemList)
+    #key indicating whether to return attributes (kSecReturnAttributes)
     RETURN_ATTRIBUTES = CF::Base.typecast(Sec.kSecReturnAttributes)
+    #key indicating whether to return the SecKeychainItemRef (kSecReturnRef)
     RETURN_REF = CF::Base.typecast(Sec.kSecReturnRef)
+    #key indicating whether to return the password data (kSecReturnData)
     RETURN_DATA = CF::Base.typecast(Sec.kSecReturnData)
+    #key indicating which keychain to use for the operation (kSecUseKeychain)
     KEYCHAIN = CF::Base.typecast(Sec.kSecUseKeychain)
   end
 
+  # defines constants for use as the class of an item
   module Classes
+    # constant identifiying generic passwords (kSecClassGenericPassword)
     GENERIC =   CF::Base.typecast(Sec.kSecClassGenericPassword)
+    # constant identifying internet passwords (kSecClassInternetPassword)
     INTERNET = CF::Base.typecast(Sec.kSecClassInternetPassword)
   end
 
+  # Search match types for use with SecCopyMatching
   module Search
+    #meta value for {Sec::Search::LIMIT} indicating that all items be returned (kSecMatchLimitAll)
     ALL = CF::Base.typecast(Sec.kSecMatchLimitAll)
+    # hash key indicating the maximum number of items (kSecMatchLimit)
     LIMIT = CF::Base.typecast(Sec.kSecMatchLimit)
   end
 
+  # Constants for use with SecItemAdd/SecItemUpdate
   module Value
+    # The hash key for the SecKeychainItemRef (in the dictionary returned by SecCopyMatching) (kSecValueRef)
     REF = CF::Base.typecast(Sec.kSecValueRef)
+    # The hash key for the password data (in the dictionary returned by SecCopyMatching) (kSecValueData)
     DATA = CF::Base.typecast(Sec.kSecValueData)
   end
 
 
+  # The base class of all CF types from the security framework
+  #
+  # @abstract
   class Base < CF::Base
+    #@private
     def self.register_type(type_name)
       Sec.attach_function "#{type_name}GetTypeID", [], CF.find_type(:cftypeid)
       @@type_map[Sec.send("#{type_name}GetTypeID")] = self
     end
   end
 
+  # If the result is non-zero raises an exception.
+  #
+  # The exception will have the result code as well as a human readable description
+  # 
+  # @param [Integer] result the status code to check
+  # @raise [Keychain::Error] is the result is non zero
   def self.check_osstatus result
     if result != 0
       case result

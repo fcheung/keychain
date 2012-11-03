@@ -7,10 +7,15 @@ module Sec
 
 end
 
+# An individual item from the keychain. Individual accessors are generated for the items attributes
+#
+#
 class Keychain::Item < Sec::Base
   attr_accessor :attributes
   register_type 'SecKeychainItem'
 
+  # returns a programmer friendly description of the item
+  # @return [String]
   def inspect
     "<SecKeychainItem 0x#{@ptr.address.to_s(16)} #{service ? "service: #{service}" : "server: #{server}"} account: #{account}>"
   end
@@ -28,7 +33,10 @@ class Keychain::Item < Sec::Base
 
   # Creates a new keychain item either from an FFI::Pointer or a hash of attributes
   #
-
+  # @param [FFI::Pointer, Hash] attrs_or_pointer Either an FFI::Pointer to an existing 
+  #   SecKeychainItemRef to wrap or hash of attributes to create a new, unsaved Keychain::Item from
+  #   see {Keychain::Scope#create}
+  #  
   def self.new(attrs_or_pointer)
     if attrs_or_pointer.is_a? Hash
       super(0).tap do |result|
@@ -39,6 +47,7 @@ class Keychain::Item < Sec::Base
     end
   end
 
+  # @private
   def initialize(*args)
     super
     @attributes = {}
@@ -52,10 +61,17 @@ class Keychain::Item < Sec::Base
     self
   end
 
+  # Set a new password for the item
+  # @note The new password is not saved into the keychain until you call {Keychain::Item#save!}
+  # @param [String] value The new value for the password
+  # @return [String] The set value
   def password=(value)
     @unsaved_password = value
   end
 
+  # Returns the keychain the item is in
+  #
+  # @return [Keychain::Keychain]
   def keychain
     out = FFI::MemoryPointer.new :pointer
     status = Sec.SecKeychainItemCopyKeychain(self,out)
@@ -75,6 +91,11 @@ class Keychain::Item < Sec::Base
     CF::Base.typecast(out_buffer.read_pointer).to_s
   end
 
+  # Attempts to update the keychain with any changes made to the item
+  # or saves a previously unpersisted item
+  # @param [optional, Hash] options extra options when saving the item
+  # @option options [Keychain::Keychain] :keychain when saving an unsaved item, they keychain to save it in
+  # @return [Keychain::Item] returns the item
   def save!(options={})
     if persisted?
       cf_dict = update
@@ -87,10 +108,13 @@ class Keychain::Item < Sec::Base
     self
   end
 
+  # @private
   def self.from_dictionary_of_attributes(cf_dict)
     new(0).tap {|item| item.send :update_self_from_dictionary, cf_dict}
   end
 
+  # Whether the item has been persisted to the keychain
+  # @return [Boolean]
   def persisted?
     !@ptr.null?
   end

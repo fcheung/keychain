@@ -8,6 +8,7 @@ module Sec
   attach_function 'SecKeychainCreate', [:string, :uint32, :pointer, :char, :pointer, :pointer], :osstatus
   attach_function 'SecItemCopyMatching', [:pointer, :pointer], :osstatus
   
+  #@private
   class KeychainSettings < FFI::Struct
     layout  :version, :uint32,
             :lock_on_sleep, :uchar,
@@ -31,6 +32,8 @@ module Sec
 end
 
 module Keychain
+  # Wrapper class for individual keychains. Corresponds to a SecKeychainRef
+  #
   class Keychain < Sec::Base
     register_type 'SecKeychain'
 
@@ -52,7 +55,7 @@ module Keychain
 
     # Set whether the keychain will be locked if the machine goes to sleep
     #
-    # @param [Boolean]
+    # @param [Boolean] value
     #
     def lock_on_sleep= value
       put_settings(get_settings.tap {|s| s[:lock_on_sleep] = value ? 1 : 0})
@@ -60,7 +63,7 @@ module Keychain
 
     # Sets the duration (in seconds) after which the keychain will be locked
     #
-    # @param [Boolean]
+    # @param [Integer] value dutarion in seconds
     #
     def lock_interval= value
       put_settings(get_settings.tap {|s| s[:lock_interval] = value})
@@ -80,6 +83,8 @@ module Keychain
       Scope.new(Sec::Classes::GENERIC, self)
     end
 
+    # returns a description of the keychain
+    # @return [String]
     def inspect
       "<SecKeychain 0x#{@ptr.address.to_s(16)}: #{path}>"
     end
@@ -87,7 +92,7 @@ module Keychain
     # Removes the keychain from the search path and deletes the corresponding file (SecKeychainDelete)
     #
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainDelete
-    #
+    # @return self
     def delete
       status = Sec.SecKeychainDelete(self)
       Sec.check_osstatus(status)
@@ -112,15 +117,14 @@ module Keychain
 
     # Locks the keychain
     #
-    #
     def lock!
       status = Sec.SecKeychainLock(self)
       Sec.check_osstatus status
     end
 
-    # Locks the keychain
+    # Unlocks the keychain
     #
-    # @param [String] the password to unlock the keychain with. If no password is supplied the keychain will prompt the user for a password
+    # @param [optional, String] password the password to unlock the keychain with. If no password is supplied the keychain will prompt the user for a password
     def unlock! password=nil
       if password
         password = password.encode(Encoding::UTF_8)
@@ -131,14 +135,20 @@ module Keychain
       Sec.check_osstatus status
     end 
 
+    # Returns whether the keychain is locked
+    # @return [Boolean]
     def locked?
       !status_flag?(:kSecUnlockStateStatus)
     end
 
+    # Returns whether the keychain is readable
+    # @return [Boolean]
     def readable?
       status_flag?(:kSecReadPermStatus)
     end
 
+    # Returns whether the keychain is writable
+    # @return [Boolean]
     def writeable?
       status_flag?(:kSecWritePermStatus)
     end
