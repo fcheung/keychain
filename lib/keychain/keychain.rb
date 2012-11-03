@@ -153,6 +153,15 @@ module Keychain
       status_flag?(:kSecWritePermStatus)
     end
        
+    def exists?
+      begin
+        readable?
+        true
+      rescue NoSuchKeychainError
+        false
+      end
+    end
+
     private
 
     def status_flag? enum_name

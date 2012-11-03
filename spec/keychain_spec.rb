@@ -26,6 +26,21 @@ describe Keychain do
     end
   end
 
+  describe 'exists?' do
+    context 'the keychain exists' do
+      it 'should return true' do
+        Keychain.default.exists?.should be_true
+      end
+    end 
+
+    context 'the keychain does not exist' do
+      it 'should return false' do
+        k = Keychain.open('/some/path/that/does/not/exist')
+        k.exists?.should be_false
+      end
+    end
+  end
+
   describe 'settings' do
     before(:all) do
       @keychain = Keychain.create(File.join(Dir.tmpdir, "keychain_spec_#{Time.now.to_i}_#{Time.now.usec}_#{rand(1000)}.keychain"), 'pass')
