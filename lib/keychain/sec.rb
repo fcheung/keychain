@@ -9,6 +9,7 @@ module Sec
       :errSecItemNotFound, -25300,
       :errSecDuplicateItem, -25299,
       :errSecAuthFailed, -25293,
+      :errSecNoSuchKeychain, -25294,
       :errCancelled, -128
   ]
 
@@ -120,6 +121,8 @@ module Sec
         raise Keychain::UserCancelledError.new(result)
       when Sec.enum_value(:errSecAuthFailed)
         raise Keychain::AuthFailedError.new(result)
+      when Sec.enum_value(:errSecNoSuchKeychain)
+        raise Keychain::NoSuchKeychainError.new(result)
       else
         raise Keychain::Error.new(result)
       end

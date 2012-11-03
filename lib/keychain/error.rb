@@ -21,3 +21,6 @@ end
 class Keychain::DuplicateItemError < Keychain::Error; end
 class Keychain::AuthFailedError < Keychain::Error; end
 class Keychain::UserCancelledError < Keychain::Error; end
+# Raised when an action fails because the underlying keychain
+# does not exist
+class Keychain::NoSuchKeychainError < Keychain::Error; end
