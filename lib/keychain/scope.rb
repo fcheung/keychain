@@ -5,7 +5,7 @@ class Keychain::Scope
   def initialize(kind, keychain=nil)
     @kind = kind
     @limit = nil
-    @keychains = [keychain]
+    @keychains = [keychain].compact
     @conditions = {}
   end
 
