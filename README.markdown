@@ -23,8 +23,8 @@ Most operations will act on either the default keychain, or the default keychain
 
     Keychain.default #the default keychain, usually /Users/<username>/Library/Keychains/<username>.keychain
     Keychain.open(path) #opens a keychain file
-    Keychain.create(path, password) #creates a new keychain at the specified path
-
+    Keychain.create(path, password) # creates a new keychain at the specified path, with the specified password
+                                    # omit the password to make the keychain prompt the user
 
 
 Searching for Keychain Items
