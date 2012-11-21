@@ -73,5 +73,26 @@ module Keychain
     def generic_passwords
       Scope.new(Sec::Classes::GENERIC)
     end
+
+    # sets whether user interaction is allowed
+    # If false then operations that would require user interaction (for example prompting the user for a password to unlock a keychain)
+    # will raise InteractionNotAllowedError
+    # @param [Boolean] value
+    def user_interaction_allowed= value
+      status = Sec.SecKeychainSetUserInteractionAllowed( value ? 1 : 0)
+      Sec.check_osstatus(status)
+      value
+    end
+
+    # Returns whether user interaction is allowed
+    # If false then operations that would require user interaction (for example prompting the user for a password to unlock a keychain)
+    # will raise InteractionNotAllowedError
+    # @return  whether interaction is allowed
+    def user_interaction_allowed?
+      out_buffer = FFI::MemoryPointer.new(:uchar)
+      status = Sec.SecKeychainGetUserInteractionAllowed(out_buffer)
+      Sec.check_osstatus(status)
+      out_buffer.read_uchar.nonzero?
+    end
   end
 end

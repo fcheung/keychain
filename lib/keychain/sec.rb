@@ -11,7 +11,8 @@ module Sec
       :errSecDuplicateItem, -25299,
       :errSecAuthFailed, -25293,
       :errSecNoSuchKeychain, -25294,
-      :errCancelled, -128
+      :errCancelled, -128,
+      :errSecInteractionNotAllowed, -25308
   ]
 
   attach_variable 'kSecClassInternetPassword', :pointer
@@ -155,6 +156,8 @@ module Sec
         raise Keychain::AuthFailedError.new(result)
       when Sec.enum_value(:errSecNoSuchKeychain)
         raise Keychain::NoSuchKeychainError.new(result)
+      when Sec.enum_value(:errSecInteractionNotAllowed)
+        raise Keychain::InteractionNotAllowedError.new(result)
       else
         raise Keychain::Error.new(result)
       end

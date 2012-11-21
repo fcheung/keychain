@@ -32,3 +32,6 @@ class Keychain::UserCancelledError < Keychain::Error; end
 # Raised when an action fails because the underlying keychain
 # does not exist
 class Keychain::NoSuchKeychainError < Keychain::Error; end
+# Raised when an action would rewuire user interaction but user interaction
+# is not allowed. See Keychain.user_interaction_allowed=
+class Keychain::InteractionNotAllowedError < Keychain::Error; end

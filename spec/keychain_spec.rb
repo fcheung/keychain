@@ -1,6 +1,20 @@
 require 'spec_helper'
 
 describe Keychain do
+
+  describe 'user interaction' do
+    it 'should be true by default' do
+      Keychain.user_interaction_allowed?.should be_true
+    end
+
+    it 'should be changeable' do
+      Keychain.user_interaction_allowed = false
+      Keychain.user_interaction_allowed?.should be_false
+      Keychain.user_interaction_allowed = true
+      Keychain.user_interaction_allowed?.should be_true
+    end
+  end
+
   describe 'default' do
     it "should return the login keychain" do
       Keychain.default.path.should == File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain'))

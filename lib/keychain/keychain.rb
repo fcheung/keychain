@@ -24,6 +24,9 @@ module Sec
 
   attach_function 'SecKeychainGetStatus', [:keychainref, :pointer], :osstatus
 
+  attach_function 'SecKeychainSetUserInteractionAllowed', [:uchar], :osstatus
+
+  attach_function 'SecKeychainGetUserInteractionAllowed', [:pointer], :osstatus
   enum :keychainStatus, [
     :kSecUnlockStateStatus, 1,
     :kSecReadPermStatus,    2,
