@@ -1,3 +1,5 @@
+# @markup markdown
+
 A set of ruby bindings for the OS X keychain, written using ffi
 
 Installation
