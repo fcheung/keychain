@@ -1,5 +1,15 @@
 A set of ruby bindings for the OS X keychain, written using ffi
 
+Installation
+============
+
+    gem install ruby-keychain
+
+or in your gemfile,
+
+    gem 'ruby-keychain', :require => 'keychain'
+
+
 Introduction
 ============
 
@@ -18,7 +28,7 @@ Most operations will act on either the default keychain, or the default keychain
 
 
 Searching for Keychain Items
-=========
+=============================
 
 The top level constant `Keychain` as well as individual keychain objects have two methods `internet_passwords` and `generic_passwords` that return scope like objects. You can do
 
