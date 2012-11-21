@@ -14,16 +14,21 @@ module Keychain
     # See https://developer.apple.com/library/mac/documentation/security/Reference/keychainservices/Reference/reference.html#//apple_ref/c/func/SecKeychainCreate
     # @param [String] path The path to the keychain file to create
     #   If it is not absolute it is interpreted relative to ~/Library/Keychains
-    # @param [String] password The password to use for the keychain
+    # @param [optional, String] password The password to use for the keychain. if not supplied, the user will be prompted for a password
     # @return [Keychain::Keychain] a keychain object representing the newly created keychain
 
-    def create(path, password)
-      password = password.encode(Encoding::UTF_8)
+    def create(path, password=nil)
       path = path.encode(Encoding::UTF_8)
-
       out_buffer = FFI::MemoryPointer.new(:pointer)
-      status = Sec.SecKeychainCreate(path, password.bytesize, FFI::MemoryPointer.from_string(password), 0,
+
+      if password
+        password = password.encode(Encoding::UTF_8)
+        status = Sec.SecKeychainCreate(path, password.bytesize, FFI::MemoryPointer.from_string(password), 0,
                                           nil, out_buffer)
+
+      else
+        status = Sec.SecKeychainCreate(path, 0, nil, 1, nil, out_buffer)
+      end
 
       Sec.check_osstatus(status)
       Keychain.new(out_buffer.read_pointer).release_on_gc
