@@ -14,7 +14,7 @@ describe Keychain do
     end
   end
 
-  describe 'new' do
+  describe 'create' do
     it 'should create the keychain' do
       begin
         keychain = Keychain.create(File.join(Dir.tmpdir, "other_keychain_spec_#{Time.now.to_i}_#{Time.now.usec}_#{rand(1000)}.keychain"),
@@ -22,6 +22,14 @@ describe Keychain do
         File.exists?(keychain.path).should be_true
       ensure
        keychain.delete
+      end
+    end
+
+    context 'no password supplied' do
+      #we have to stub this out as it would trigger a dialog box prompting for a password
+      it 'should create a keychain by prompting the user' do
+        Sec.should_receive('SecKeychainCreate').with('akeychain', 0, nil, 1, nil,kind_of(FFI::Pointer)).and_return(0)
+        Keychain.create('akeychain')
       end
     end
   end
