@@ -1,5 +1,4 @@
-# @markup markdown
-[![Build Status](https://travis-ci.org/fcheung/keychain_ffi.png)](https://travis-ci.org/fcheung/keychain_ffi)
+[![Build Status](https://travis-ci.org/fcheung/keychain.png)](https://travis-ci.org/fcheung/keychain)
 
 A set of ruby bindings for the OS X keychain, written using ffi
 
