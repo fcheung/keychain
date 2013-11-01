@@ -43,13 +43,15 @@ module Keychain
   class Keychain < Sec::Base
     register_type 'SecKeychain'
 
-
+    # Add the keychain to the default searchlist
+    #
+    #
     def add_to_search_list
       list = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainCopySearchList(list)
       Sec.check_osstatus(status)
       ruby_list = CF::Base.typecast(list.read_pointer).to_ruby
-      ruby_list << self
+      ruby_list << self unless ruby_list.include?(self)
       status = Sec.SecKeychainSetSearchList(CF::Array.immutable(ruby_list))
       Sec.check_osstatus(status)
       self
