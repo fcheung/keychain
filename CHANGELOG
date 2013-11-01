@@ -1,0 +1,15 @@
+Version 0.1.2
+=============
+
+- Don't crash hard when passing nil to keychain.open
+- Deal with newly created keychains not being added to the searchpath by default on Mavericks
+
+Version 0.1.1
+=============
+
+- Password should optional when creating a keychain
+
+Version 0.1.0
+=============
+
+Initial release
