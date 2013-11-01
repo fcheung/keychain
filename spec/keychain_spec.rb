@@ -26,6 +26,10 @@ describe Keychain do
       keychain = Keychain.open(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain'))
       keychain.path.should == Keychain.default.path
     end
+
+    it 'should raise when passed a nil path' do
+      expect {Keychain.open(nil)}.to raise_error(ArgumentError)
+    end
   end
 
   describe 'create' do

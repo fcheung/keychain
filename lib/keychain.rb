@@ -54,6 +54,7 @@ module Keychain
     # @param [String] path Path to the keychain file
     # @return [Keychain::Keychain] a keychain object
     def open(path)
+      raise ArgumentError unless path
       out_buffer = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainOpen(path,out_buffer);
       Sec.check_osstatus(status)
