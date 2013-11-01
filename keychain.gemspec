@@ -4,11 +4,11 @@ require 'keychain/version'
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-keychain}
-  s.version = "0.1.1"
+  s.version = Keychain::VERSION
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Frederick Cheung"]
-  s.date = %q{2012-11-21}
+  s.date = %q{2013-11-01}
   s.description = %q{Ruby wrapper for OS X's keychain }
   s.email = %q{frederick.cheung@gmail.com}
   s.files += Dir["lib/**/*.rb"]
