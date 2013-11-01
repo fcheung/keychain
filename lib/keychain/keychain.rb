@@ -8,6 +8,9 @@ module Sec
   attach_function 'SecKeychainCreate', [:string, :uint32, :pointer, :char, :pointer, :pointer], :osstatus
   attach_function 'SecItemCopyMatching', [:pointer, :pointer], :osstatus
   
+  attach_function 'SecKeychainSetSearchList', [:pointer], :osstatus
+  attach_function 'SecKeychainCopySearchList', [:pointer], :osstatus
+
   #@private
   class KeychainSettings < FFI::Struct
     layout  :version, :uint32,
@@ -40,6 +43,17 @@ module Keychain
   class Keychain < Sec::Base
     register_type 'SecKeychain'
 
+
+    def add_to_search_list
+      list = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecKeychainCopySearchList(list)
+      Sec.check_osstatus(status)
+      ruby_list = CF::Base.typecast(list.read_pointer).to_ruby
+      ruby_list << self
+      status = Sec.SecKeychainSetSearchList(CF::Array.immutable(ruby_list))
+      Sec.check_osstatus(status)
+      self
+    end
     # Returns whether the keychain will be locked if the machine goes to sleep
     #
     # @return [Boolean]

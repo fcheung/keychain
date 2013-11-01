@@ -85,6 +85,7 @@ class Keychain::Item < Sec::Base
     return @unsaved_password if @unsaved_password
     out_buffer = FFI::MemoryPointer.new(:pointer)
     status = Sec.SecItemCopyMatching({Sec::Query::ITEM_LIST => CF::Array.immutable([self]),
+                              Sec::Query::SEARCH_LIST => [self.keychain],
                              Sec::Query::CLASS => klass, 
                              Sec::Query::RETURN_DATA => true}.to_cf, out_buffer)
     Sec.check_osstatus(status)
@@ -131,7 +132,7 @@ class Keychain::Item < Sec::Base
   end
 
   def update
-    status = Sec.SecItemUpdate({Sec::Query::ITEM_LIST => [self], Sec::INVERSE_ATTR_MAP[:klass] => klass}.to_cf, build_new_attributes);
+    status = Sec.SecItemUpdate({Sec::Query::SEARCH_LIST => [self.keychain], Sec::Query::ITEM_LIST => [self], Sec::INVERSE_ATTR_MAP[:klass] => klass}.to_cf, build_new_attributes);
     Sec.check_osstatus(status)
 
     result = FFI::MemoryPointer.new :pointer
@@ -167,6 +168,7 @@ class Keychain::Item < Sec::Base
 
   def build_refresh_query
     query = CF::Dictionary.mutable
+    query[Sec::Query::SEARCH_LIST] = CF::Array.immutable([self.keychain])
     query[Sec::Query::ITEM_LIST] = CF::Array.immutable([self])
     query[Sec::Query::RETURN_ATTRIBUTES] = CF::Boolean::TRUE
     query[Sec::Query::RETURN_REF] = CF::Boolean::TRUE
