@@ -33,6 +33,10 @@ class Keychain::Certificate < Sec::Base
   INVERSE_ATTR_MAP = ATTR_MAP.invert
   define_attributes(ATTR_MAP)
 
+  def klass
+    Sec::Classes::CERTIFICATE.to_ruby
+  end
+
   def public_key
     key_ref = FFI::MemoryPointer.new(:pointer)
     status = Sec.SecCertificateCopyPublicKey(self, key_ref)

@@ -16,8 +16,8 @@ class Keychain::Identity < Sec::Base
   INVERSE_ATTR_MAP = ATTR_MAP.invert
   define_attributes(ATTR_MAP)
 
-  def self.kind
-    CF::Base.typecast(Sec.kSecClassIdentity)
+  def klass
+    Sec::Classes::IDENTITY.to_ruby
   end
 
   def certificate

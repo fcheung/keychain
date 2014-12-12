@@ -78,6 +78,10 @@ class Keychain::Key < Sec::Base
   INVERSE_ATTR_MAP = ATTR_MAP.invert
   define_attributes(ATTR_MAP)
 
+  def klass
+    Sec::Classes::KEY.to_ruby
+  end
+
   def export(passphrase = nil, format = :kSecFormatUnknown)
     flags = Sec::SecItemImportExportKeyParameters.new
     flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
