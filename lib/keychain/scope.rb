@@ -111,14 +111,31 @@ class Keychain::Scope
     unless result.is_a?(CF::Array)
       result = CF::Array.immutable([result])
     end
-    result.collect {|dictionary_of_attributes| Keychain::Item.from_dictionary_of_attributes(dictionary_of_attributes)}
+    result.collect do |dictionary_of_attributes|
+      item = dictionary_of_attributes[Sec::Value::REF]
+      item.update_self_from_dictionary(dictionary_of_attributes)
+      item
+    end
   end
-
 
   def to_query
     query = CF::Dictionary.mutable
+    # This is terrible but we need to know the result class to get the list of attributes
+    inverse_attributes = case @kind
+                           when Sec::Classes::CERTIFICATE
+                             Keychain::Certificate::INVERSE_ATTR_MAP
+                           when Sec::Classes::GENERIC
+                             Keychain::Item::INVERSE_ATTR_MAP
+                           when Sec::Classes::IDENTITY
+                             Keychain::Identity::INVERSE_ATTR_MAP
+                           when Sec::Classes::INTERNET
+                             Keychain::Item::INVERSE_ATTR_MAP
+                           when Sec::Classes::KEY
+                             Keychain::Key::INVERSE_ATTR_MAP
+                         end
+
     @conditions.each do |k,v|
-      k = Sec::INVERSE_ATTR_MAP[k]
+      k = inverse_attributes[k]
       query[k] = v.to_cf
     end
 
