@@ -35,4 +35,19 @@ class Keychain::Identity < Sec::Base
 
     Keychain::Key.new(key_ref.read_pointer)
   end
+
+  def pkcs12(passphrase='')
+    flags = Sec::SecItemImportExportKeyParameters.new
+    flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
+    flags[:passphrase] = CF::String.from_string(passphrase).to_ptr
+
+    data_ptr = FFI::MemoryPointer.new(:pointer)
+    status = Sec.SecItemExport(self, :kSecFormatPKCS12, 0, flags, data_ptr)
+    Sec.check_osstatus(status)
+
+    data = CF::Data.new(data_ptr.read_pointer)
+    result = OpenSSL::PKCS12.new(data.to_s)
+    data.release
+    result
+  end
 end
