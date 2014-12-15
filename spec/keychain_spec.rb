@@ -4,27 +4,27 @@ describe Keychain do
 
   describe 'user interaction' do
     it 'should be true by default' do
-      Keychain.user_interaction_allowed?.should be_truthy
+      expect(Keychain.user_interaction_allowed?).to be_truthy
     end
 
     it 'should be changeable' do
       Keychain.user_interaction_allowed = false
-      Keychain.user_interaction_allowed?.should be_falsey
+      expect(Keychain.user_interaction_allowed?).to be_falsey
       Keychain.user_interaction_allowed = true
-      Keychain.user_interaction_allowed?.should be_truthy
+      expect(Keychain.user_interaction_allowed?).to be_truthy
     end
   end
 
   describe 'default' do
     it "should return the login keychain" do
-      Keychain.default.path.should == File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain'))
+      expect(Keychain.default.path).to eq(File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain')))
     end
   end
 
   describe 'open' do
     it 'should create a keychain reference to a path' do
       keychain = Keychain.open(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain'))
-      keychain.path.should == Keychain.default.path
+      expect(keychain.path).to eq(Keychain.default.path)
     end
 
     it 'should raise when passed a nil path' do
@@ -37,7 +37,7 @@ describe Keychain do
       begin
         keychain = Keychain.create(File.join(Dir.tmpdir, "other_keychain_spec_#{Time.now.to_i}_#{Time.now.usec}_#{rand(1000)}.keychain"),
                             'password');
-        File.exists?(keychain.path).should be_truthy
+        expect(File.exists?(keychain.path)).to be_truthy
       ensure
        keychain.delete
       end
@@ -46,7 +46,7 @@ describe Keychain do
     context 'no password supplied' do
       #we have to stub this out as it would trigger a dialog box prompting for a password
       it 'should create a keychain by prompting the user' do
-        Sec.should_receive('SecKeychainCreate').with('akeychain', 0, nil, 1, nil,kind_of(FFI::Pointer)).and_return(0)
+        expect(Sec).to receive('SecKeychainCreate').with('akeychain', 0, nil, 1, nil,kind_of(FFI::Pointer)).and_return(0)
         Keychain.create('akeychain')
       end
     end
@@ -55,14 +55,14 @@ describe Keychain do
   describe 'exists?' do
     context 'the keychain exists' do
       it 'should return true' do
-        Keychain.default.exists?.should be_truthy
+        expect(Keychain.default.exists?).to be_truthy
       end
     end 
 
     context 'the keychain does not exist' do
       it 'should return false' do
         k = Keychain.open('/some/path/that/does/not/exist')
-        k.exists?.should be_falsey
+        expect(k.exists?).to be_falsey
       end
     end
   end
@@ -74,14 +74,14 @@ describe Keychain do
 
     it 'should read/write lock_on_sleep' do
       @keychain.lock_on_sleep = true
-      @keychain.lock_on_sleep?.should == true
+      expect(@keychain.lock_on_sleep?).to eq(true)
       @keychain.lock_on_sleep = false
-      @keychain.lock_on_sleep?.should == false
+      expect(@keychain.lock_on_sleep?).to eq(false)
     end
 
     it 'should read/write lock_interval' do
       @keychain.lock_interval = 12345
-      @keychain.lock_interval.should == 12345
+      expect(@keychain.lock_interval).to eq(12345)
     end
 
     after(:all) do
@@ -102,7 +102,7 @@ describe Keychain do
 
       it 'should unlock on valid password' do
         @keychain.unlock! 'pass'
-        @keychain.should_not be_locked
+        expect(@keychain).not_to be_locked
       end
     end
   end
@@ -125,15 +125,15 @@ describe Keychain do
     describe('create') do
       it 'should add a password' do
         item =  @keychain_1.send(subject).create(create_arguments)
-        item.should be_a(Keychain::Item)
-        item.klass.should == expected_kind
-        item.password.should == 'some-password'
+        expect(item).to be_a(Keychain::Item)
+        expect(item.klass).to eq(expected_kind)
+        expect(item.password).to eq('some-password')
       end
 
       it 'should be findable' do        
         @keychain_1.send(subject).create(create_arguments)
         item = @keychain_1.send(subject).where(search_for_created_arguments).first
-        item.password.should == 'some-password'
+        expect(item.password).to eq('some-password')
       end
 
       context 'when a duplicate item exists' do
@@ -151,32 +151,32 @@ describe Keychain do
 
       context 'when the keychain does not contains a matching item' do
         it 'should return []' do
-          @keychain_1.send(subject).where(search_arguments_with_no_results).all.should == []
+          expect(@keychain_1.send(subject).where(search_arguments_with_no_results).all).to eq([])
         end
       end
 
       it 'should return an array of results' do
         item = @keychain_1.send(subject).where(search_arguments).all.first
-        item.should be_a(Keychain::Item)
-        item.password.should == 'some-password-1'
+        expect(item).to be_a(Keychain::Item)
+        expect(item.password).to eq('some-password-1')
       end
 
       context 'searching all keychains' do
         context 'when the keychain does contains matching items' do
           it 'should return all of them' do
-            Keychain.send(subject).where(search_arguments_with_multiple_results).all.length.should == 3
+            expect(Keychain.send(subject).where(search_arguments_with_multiple_results).all.length).to eq(3)
           end
         end
 
         context 'when the limit is option is set' do
           it 'should limit the return set' do
-            Keychain.send(subject).where(search_arguments_with_multiple_results).limit(1).all.length.should == 1
+            expect(Keychain.send(subject).where(search_arguments_with_multiple_results).limit(1).all.length).to eq(1)
           end
         end
 
         context 'when a subset of keychains is specified' do
           it 'should return items from those keychains' do
-            Keychain.send(subject).where(search_arguments_with_multiple_results).in(@keychain_1, @keychain_2).all.length.should == 2
+            expect(Keychain.send(subject).where(search_arguments_with_multiple_results).in(@keychain_1, @keychain_2).all.length).to eq(2)
           end
         end
       end
@@ -184,15 +184,15 @@ describe Keychain do
     describe 'first' do
       context 'when the keychain does not contain a matching item' do
         it 'should return nil' do
-          item = @keychain_1.send(subject).where(search_arguments_with_no_results).first.should be_nil
+          item = expect(@keychain_1.send(subject).where(search_arguments_with_no_results).first).to be_nil
         end
       end
 
       context 'when the keychain does contain a matching item' do
         it 'should find it' do
           item = @keychain_1.send(subject).where(search_arguments).first
-          item.should be_a(Keychain::Item)
-          item.password.should == 'some-password-1'
+          expect(item).to be_a(Keychain::Item)
+          expect(item.password).to eq('some-password-1')
         end
       end
 
@@ -202,7 +202,7 @@ describe Keychain do
         end
 
         it 'should not find it' do
-          @keychain_2.send(subject).where(search_arguments).first.should be_nil
+          expect(@keychain_2.send(subject).where(search_arguments).first).to be_nil
         end
       end
     end

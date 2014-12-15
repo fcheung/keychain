@@ -18,31 +18,31 @@ describe Keychain::Item do
 
   describe 'keychain' do
     it 'should return the keychain containing the item' do
-      subject.keychain.should == @keychain
+      expect(subject.keychain).to eq(@keychain)
     end
   end
   
   describe 'password' do
     it 'should retrieve the password' do
-      subject.password.should == 'some-password'
+      expect(subject.password).to eq('some-password')
     end
   end
 
   describe 'service' do
     it 'should retrieve the service' do
-      subject.service.should == 'some-service'
+      expect(subject.service).to eq('some-service')
     end
   end
 
   describe 'account' do
     it 'should retrieve the account' do
-      subject.account.should == 'some-account'
+      expect(subject.account).to eq('some-account')
     end
   end
 
   describe 'created_at' do
     it 'should retrieve the item creation date' do
-      subject.created_at.should be_within(2).of(Time.now)
+      expect(subject.created_at).to be_within(2).of(Time.now)
     end
   end
 
@@ -53,15 +53,15 @@ describe Keychain::Item do
       subject.save!
 
       fresh = find_item
-      fresh.password.should == 'new-password'
-      fresh.account.should == 'new-account'
+      expect(fresh.password).to eq('new-password')
+      expect(fresh.account).to eq('new-account')
     end
   end
 
   describe 'delete' do
     it 'should remove the item from the keychain' do
       subject.delete
-      find_item.should be_nil
+      expect(find_item).to be_nil
     end
   end
 end
