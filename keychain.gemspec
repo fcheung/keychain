@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "ffi"
   s.add_runtime_dependency "corefoundation", "~>0.1.3"
-  s.add_development_dependency "rspec", "~>2.10"
+  s.add_development_dependency "rspec", "~>3.1.0"
   s.add_development_dependency "rake"
   s.add_development_dependency "yard"
   s.add_development_dependency "redcarpet"

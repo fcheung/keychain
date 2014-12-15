@@ -4,14 +4,14 @@ describe Keychain do
 
   describe 'user interaction' do
     it 'should be true by default' do
-      Keychain.user_interaction_allowed?.should be_true
+      Keychain.user_interaction_allowed?.should be_truthy
     end
 
     it 'should be changeable' do
       Keychain.user_interaction_allowed = false
-      Keychain.user_interaction_allowed?.should be_false
+      Keychain.user_interaction_allowed?.should be_falsey
       Keychain.user_interaction_allowed = true
-      Keychain.user_interaction_allowed?.should be_true
+      Keychain.user_interaction_allowed?.should be_truthy
     end
   end
 
@@ -37,7 +37,7 @@ describe Keychain do
       begin
         keychain = Keychain.create(File.join(Dir.tmpdir, "other_keychain_spec_#{Time.now.to_i}_#{Time.now.usec}_#{rand(1000)}.keychain"),
                             'password');
-        File.exists?(keychain.path).should be_true
+        File.exists?(keychain.path).should be_truthy
       ensure
        keychain.delete
       end
@@ -55,14 +55,14 @@ describe Keychain do
   describe 'exists?' do
     context 'the keychain exists' do
       it 'should return true' do
-        Keychain.default.exists?.should be_true
+        Keychain.default.exists?.should be_truthy
       end
     end 
 
     context 'the keychain does not exist' do
       it 'should return false' do
         k = Keychain.open('/some/path/that/does/not/exist')
-        k.exists?.should be_false
+        k.exists?.should be_falsey
       end
     end
   end
