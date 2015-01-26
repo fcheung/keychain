@@ -10,6 +10,7 @@ describe Keychain::Certificate do
       scope = Keychain::Scope.new(Sec::Classes::CERTIFICATE)
       certs = scope.where(query).all
       expect(certs.length).to be > 0
+      certs.first.should be_kind_of(Keychain::Certificate)
     end
   end
 

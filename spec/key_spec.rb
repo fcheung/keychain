@@ -6,6 +6,7 @@ describe Keychain::Key do
       scope = Keychain::Scope.new(Sec::Classes::KEY)
       keys = scope.all
       expect(keys.length).to be > 0
+      keys.first.should be_kind_of(Keychain::Key)
     end
   end
 

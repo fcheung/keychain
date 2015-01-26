@@ -6,6 +6,7 @@ describe Keychain::Identity do
       scope = Keychain::Scope.new(Sec::Classes::IDENTITY)
       identities = scope.all
       expect(identities.length).to be > 0
+      identities.first.should be_kind_of(Keychain::Identity)
     end
   end
 
