@@ -15,10 +15,12 @@ module Sec
       :errSecInteractionNotAllowed, -25308
   ]
 
+  attach_variable 'kSecClass', :pointer
   attach_variable 'kSecClassInternetPassword', :pointer
   attach_variable 'kSecClassGenericPassword', :pointer
-
-  attach_variable 'kSecClass', :pointer
+  attach_variable 'kSecClassCertificate', :pointer
+  attach_variable 'kSecClassIdentity', :pointer
+  attach_variable 'kSecClassKey', :pointer
 
   attach_variable 'kSecAttrAccess', :pointer
   attach_variable 'kSecAttrAccount', :pointer
@@ -54,36 +56,6 @@ module Sec
   attach_variable 'kSecValueData', :pointer
   attach_variable 'kSecUseKeychain', :pointer
 
-  
-
-  # map of kSecAttr* constants to the corresponding ruby name for the attribute
-  # Used in {Keychain::Item#attributes}}
-  ATTR_MAP = {
-    CF::Base.typecast(kSecAttrAccess) => :access,
-    CF::Base.typecast(kSecAttrAccount) => :account,
-    CF::Base.typecast(kSecAttrAuthenticationType) => :authentication_type,
-    CF::Base.typecast(kSecAttrComment) => :comment,
-    CF::Base.typecast(kSecAttrCreationDate) => :created_at,
-    CF::Base.typecast(kSecAttrCreator) => :creator,
-    CF::Base.typecast(kSecAttrDescription) => :description,
-    CF::Base.typecast(kSecAttrGeneric) => :generic,
-    CF::Base.typecast(kSecAttrIsInvisible) => :invisible,
-    CF::Base.typecast(kSecAttrIsNegative) => :negative,
-    CF::Base.typecast(kSecAttrLabel) => :label,
-    CF::Base.typecast(kSecAttrModificationDate) => :updated_at,
-    CF::Base.typecast(kSecAttrPath) => :path,
-    CF::Base.typecast(kSecAttrPort) => :port,
-    CF::Base.typecast(kSecAttrProtocol) => :protocol,
-    CF::Base.typecast(kSecAttrSecurityDomain) => :security_domain,
-    CF::Base.typecast(kSecAttrServer) => :server,
-    CF::Base.typecast(kSecAttrService) => :service,
-    CF::Base.typecast(kSecAttrType) => :type,
-    CF::Base.typecast(kSecClass)    => :klass
-  }
-
-  # Inverse of {ATTR_MAP}
-  INVERSE_ATTR_MAP = ATTR_MAP.invert
-
   # Query options for use with SecCopyMatching, SecItemUpdate
   #
   module Query
@@ -105,10 +77,16 @@ module Sec
 
   # defines constants for use as the class of an item
   module Classes
-    # constant identifiying generic passwords (kSecClassGenericPassword)
+    # constant identifying certificates (kSecClassCertificate)
+    CERTIFICATE =   CF::Base.typecast(Sec.kSecClassCertificate)
+    # constant identifying generic passwords (kSecClassGenericPassword)
     GENERIC =   CF::Base.typecast(Sec.kSecClassGenericPassword)
+    # constant identifying generic passwords (kSecClassIdentity)
+    IDENTITY =   CF::Base.typecast(Sec.kSecClassIdentity)
     # constant identifying internet passwords (kSecClassInternetPassword)
     INTERNET = CF::Base.typecast(Sec.kSecClassInternetPassword)
+    # constant identifying public/private key items (kSecClassKey)
+    KEY = CF::Base.typecast(Sec.kSecClassKey)
   end
 
   # Search match types for use with SecCopyMatching
@@ -132,10 +110,61 @@ module Sec
   #
   # @abstract
   class Base < CF::Base
-    #@private
+    attr_reader :attributes
+
     def self.register_type(type_name)
       Sec.attach_function "#{type_name}GetTypeID", [], CF.find_type(:cftypeid)
       @@type_map[Sec.send("#{type_name}GetTypeID")] = self
+    end
+
+    def self.define_attributes(attr_map)
+      attr_map.values.each do |ruby_name|
+        unless method_defined?(ruby_name)
+          define_method ruby_name do
+            self.attributes[ruby_name]
+          end
+          define_method ruby_name.to_s+'=' do |value|
+            self.attributes[ruby_name] = value
+          end
+        end
+      end
+    end
+
+    def initialize(ptr)
+      super
+      @attributes = {}
+    end
+
+    def update_self_from_dictionary(cf_dict)
+      @attributes = cf_dict.inject({}) do |memo, (k,v)|
+        if ruby_name = self.class::ATTR_MAP[k]
+          memo[ruby_name] = v.to_ruby
+        end
+        memo
+      end
+    end
+
+    # Returns the keychain the item is in
+    #
+    # @return [Keychain::Keychain]
+    def keychain
+      out = FFI::MemoryPointer.new :pointer
+      status = Sec.SecKeychainItemCopyKeychain(self,out)
+      Sec.check_osstatus(status)
+      CF::Base.new(out.read_pointer).release_on_gc
+    end
+
+    def load_attributes
+      result = FFI::MemoryPointer.new :pointer
+      status = Sec.SecItemCopyMatching({Sec::Query::SEARCH_LIST => [self.keychain],
+                                        Sec::Query::ITEM_LIST => [self],
+                                        Sec::Query::CLASS => self.klass,
+                                        Sec::Query::RETURN_ATTRIBUTES => true,
+                                        Sec::Query::RETURN_REF => false}.to_cf, result)
+      Sec.check_osstatus(status)
+
+      cf_dict = CF::Base.typecast(result.read_pointer)
+      update_self_from_dictionary(cf_dict)
     end
   end
 

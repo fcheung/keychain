@@ -4,31 +4,42 @@ module Sec
   attach_function 'SecItemAdd', [:pointer, :pointer], :osstatus
   attach_function 'SecItemUpdate', [:pointer, :pointer], :osstatus
   attach_function 'SecKeychainItemCopyKeychain', [:pointer, :pointer], :osstatus
-
 end
 
 # An individual item from the keychain. Individual accessors are generated for the items attributes
 #
 #
 class Keychain::Item < Sec::Base
-  attr_accessor :attributes
   register_type 'SecKeychainItem'
+
+  ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccess) => :access,
+              CF::Base.typecast(Sec::kSecAttrAccount) => :account,
+              CF::Base.typecast(Sec::kSecAttrAuthenticationType) => :authentication_type,
+              CF::Base.typecast(Sec::kSecAttrComment) => :comment,
+              CF::Base.typecast(Sec::kSecAttrCreationDate) => :created_at,
+              CF::Base.typecast(Sec::kSecAttrCreator) => :creator,
+              CF::Base.typecast(Sec::kSecAttrDescription) => :description,
+              CF::Base.typecast(Sec::kSecAttrGeneric) => :generic,
+              CF::Base.typecast(Sec::kSecAttrIsInvisible) => :invisible,
+              CF::Base.typecast(Sec::kSecAttrIsNegative) => :negative,
+              CF::Base.typecast(Sec::kSecAttrLabel) => :label,
+              CF::Base.typecast(Sec::kSecAttrModificationDate) => :updated_at,
+              CF::Base.typecast(Sec::kSecAttrPath) => :path,
+              CF::Base.typecast(Sec::kSecAttrPort) => :port,
+              CF::Base.typecast(Sec::kSecAttrProtocol) => :protocol,
+              CF::Base.typecast(Sec::kSecAttrSecurityDomain) => :security_domain,
+              CF::Base.typecast(Sec::kSecAttrServer) => :server,
+              CF::Base.typecast(Sec::kSecAttrService) => :service,
+              CF::Base.typecast(Sec::kSecAttrType) => :type,
+              CF::Base.typecast(Sec::kSecClass)    => :klass}
+
+  INVERSE_ATTR_MAP = ATTR_MAP.invert
+  define_attributes(ATTR_MAP)
 
   # returns a programmer friendly description of the item
   # @return [String]
   def inspect
     "<SecKeychainItem 0x#{@ptr.address.to_s(16)} #{service ? "service: #{service}" : "server: #{server}"} account: #{account}>"
-  end
-
-  Sec::ATTR_MAP.values.each do |ruby_name|
-    unless method_defined?(ruby_name)
-      define_method ruby_name do
-        @attributes[ruby_name]
-      end
-      define_method ruby_name.to_s+'=' do |value|
-        @attributes[ruby_name] = value
-      end
-    end
   end
 
   # Creates a new keychain item either from an FFI::Pointer or a hash of attributes
@@ -47,12 +58,6 @@ class Keychain::Item < Sec::Base
     end
   end
 
-  # @private
-  def initialize(*args)
-    super
-    @attributes = {}
-  end
-
   # Removes the item from the associated keychain
   #
   def delete
@@ -69,25 +74,15 @@ class Keychain::Item < Sec::Base
     @unsaved_password = value
   end
 
-  # Returns the keychain the item is in
-  #
-  # @return [Keychain::Keychain]
-  def keychain
-    out = FFI::MemoryPointer.new :pointer
-    status = Sec.SecKeychainItemCopyKeychain(self,out)
-    Sec.check_osstatus(status)
-    CF::Base.new(out.read_pointer).release_on_gc
-  end
-
   # Fetches the password data associated with the item. This may cause the user to be asked for access
   # @return [String] The password data, an ASCII_8BIT encoded string
   def password
     return @unsaved_password if @unsaved_password
     out_buffer = FFI::MemoryPointer.new(:pointer)
     status = Sec.SecItemCopyMatching({Sec::Query::ITEM_LIST => CF::Array.immutable([self]),
-                              Sec::Query::SEARCH_LIST => [self.keychain],
-                             Sec::Query::CLASS => klass, 
-                             Sec::Query::RETURN_DATA => true}.to_cf, out_buffer)
+                                      Sec::Query::SEARCH_LIST => [self.keychain],
+                                      Sec::Query::CLASS => self.klass,
+                                      Sec::Query::RETURN_DATA => true}.to_cf, out_buffer)
     Sec.check_osstatus(status)
     CF::Base.typecast(out_buffer.read_pointer).to_s
   end
@@ -102,7 +97,9 @@ class Keychain::Item < Sec::Base
       cf_dict = update
     else
       cf_dict = create(options)
-    end    
+      self.ptr = cf_dict[Sec::Value::REF].to_ptr
+      self.retain.release_on_gc
+    end
     @unsaved_password = nil
     update_self_from_dictionary(cf_dict)
     cf_dict.release
@@ -132,7 +129,9 @@ class Keychain::Item < Sec::Base
   end
 
   def update
-    status = Sec.SecItemUpdate({Sec::Query::SEARCH_LIST => [self.keychain], Sec::Query::ITEM_LIST => [self], Sec::INVERSE_ATTR_MAP[:klass] => klass}.to_cf, build_new_attributes);
+    status = Sec.SecItemUpdate({Sec::Query::SEARCH_LIST => [self.keychain],
+                                Sec::Query::ITEM_LIST => [self],
+                                Sec::Query::CLASS => klass}.to_cf, build_new_attributes);
     Sec.check_osstatus(status)
 
     result = FFI::MemoryPointer.new :pointer
@@ -142,21 +141,6 @@ class Keychain::Item < Sec::Base
     cf_dict = CF::Base.typecast(result.read_pointer)
   end
     
-
-
-  def update_self_from_dictionary(cf_dict)
-    if !persisted?
-      self.ptr = cf_dict[Sec::Value::REF].to_ptr
-      self.retain.release_on_gc
-    end
-    @attributes = cf_dict.inject({}) do |memo, (k,v)|
-      if ruby_name = Sec::ATTR_MAP[k]
-        memo[ruby_name] = v.to_ruby
-      end
-      memo
-    end
-  end
-
   def build_create_query options
     query = CF::Dictionary.mutable
     query[Sec::Value::DATA] = CF::Data.from_string(@unsaved_password) if @unsaved_password
@@ -172,7 +156,7 @@ class Keychain::Item < Sec::Base
     query[Sec::Query::ITEM_LIST] = CF::Array.immutable([self])
     query[Sec::Query::RETURN_ATTRIBUTES] = CF::Boolean::TRUE
     query[Sec::Query::RETURN_REF] = CF::Boolean::TRUE
-    query[Sec::INVERSE_ATTR_MAP[:klass]] = klass.to_cf
+    query[Sec::Query::CLASS] = klass.to_cf
     query
   end
 
@@ -181,7 +165,7 @@ class Keychain::Item < Sec::Base
     @attributes.each do |k,v|
       next if k == :created_at || k == :updated_at
       next if k == :klass && persisted?
-      k = Sec::INVERSE_ATTR_MAP[k]
+      k = self.class::INVERSE_ATTR_MAP[k]
       new_attributes[k] = v.to_cf
     end
     new_attributes[Sec::Value::DATA] = CF::Data.from_string(@unsaved_password) if @unsaved_password
