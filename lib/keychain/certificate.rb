@@ -19,7 +19,6 @@ class Keychain::Certificate < Sec::Base
   register_type 'SecCertificate'
 
   ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessible) => :accessible,
-              CF::Base.typecast(Sec::kSecAttrAccessControl) => :access_control,
               CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
               CF::Base.typecast(Sec::kSecAttrCertificateType) => :certificate_type,
               CF::Base.typecast(Sec::kSecAttrCertificateEncoding) => :certificate_encoding,
@@ -29,6 +28,8 @@ class Keychain::Certificate < Sec::Base
               CF::Base.typecast(Sec::kSecAttrSerialNumber) => :serial_number,
               CF::Base.typecast(Sec::kSecAttrSubjectKeyID) => :subject_key_id,
               CF::Base.typecast(Sec::kSecAttrPublicKeyHash) => :public_key_hash}
+
+  ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessControl)] = :access_control if defined?(Sec::kSecAttrAccessControl)
 
   INVERSE_ATTR_MAP = ATTR_MAP.invert
   define_attributes(ATTR_MAP)
