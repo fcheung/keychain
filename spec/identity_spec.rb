@@ -2,10 +2,14 @@ require 'spec_helper'
 
 describe Keychain::Identity do
   before(:context) do
+    Keychain.user_interaction_allowed = false
     @keychain = Keychain.open(File.join(File.dirname(__FILE__), 'spec.keychain'))
     @keychain.unlock! 'DummyPassword'
-  end
 
+  end
+  after(:context) do
+    Keychain.user_interaction_allowed = true
+  end
   describe 'query' do
     it 'should return a identity' do
       scope = Keychain::Scope.new(Sec::Classes::IDENTITY, @keychain)
