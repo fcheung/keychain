@@ -6,7 +6,7 @@ describe Keychain::Key do
       scope = Keychain::Scope.new(Sec::Classes::KEY)
       keys = scope.all
       expect(keys.length).to be > 0
-      keys.first.should be_kind_of(Keychain::Key)
+      expect(keys.first).to be_kind_of(Keychain::Key)
     end
   end
 
@@ -14,7 +14,7 @@ describe Keychain::Key do
     it 'should be exportable to a string' do
       scope = Keychain::Scope.new(Sec::Classes::KEY)
       key = scope.first
-      key.export.should be_kind_of(String)
+      expect(key.export).to be_kind_of(String)
     end
   end
 end

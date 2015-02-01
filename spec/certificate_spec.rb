@@ -10,7 +10,7 @@ describe Keychain::Certificate do
       scope = Keychain::Scope.new(Sec::Classes::CERTIFICATE)
       certs = scope.where(query).all
       expect(certs.length).to be > 0
-      certs.first.should be_kind_of(Keychain::Certificate)
+      expect(certs.first).to be_kind_of(Keychain::Certificate)
     end
   end
 
@@ -18,13 +18,13 @@ describe Keychain::Certificate do
     it 'should have a public key' do
       scope = Keychain::Scope.new(Sec::Classes::CERTIFICATE)
       cert = scope.where(query).first
-      cert.public_key.should be_kind_of(Keychain::Key)
+      expect(cert.public_key).to be_kind_of(Keychain::Key)
     end
 
     it 'should be exportable to x509' do
       scope = Keychain::Scope.new(Sec::Classes::CERTIFICATE)
       cert = scope.where(query).first
-      cert.x509.should be_kind_of(OpenSSL::X509::Certificate)
+      expect(cert.x509).to be_kind_of(OpenSSL::X509::Certificate)
     end
   end
 end
