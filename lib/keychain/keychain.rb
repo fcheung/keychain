@@ -1,5 +1,12 @@
 
 module Sec
+  enum :SecExternalItemType, [:kSecItemTypeUnknown ,
+                              :kSecItemTypePrivateKey,
+                              :kSecItemTypePublicKey,
+                              :kSecItemTypeSessionKey,
+                              :kSecItemTypeCertificate,
+                              :kSecItemTypeAggregate]
+
   attach_function 'SecKeychainCopyDefault', [:pointer], :osstatus
   attach_function 'SecKeychainDelete', [:keychainref], :osstatus
   attach_function 'SecKeychainOpen', [:string, :pointer], :osstatus

@@ -56,6 +56,12 @@ module Sec
   end
 
   attach_function 'SecItemExport', [:pointer, :SecExternalFormat, :SecItemImportExportFlags, :pointer, :pointer], :osstatus
+  attach_function 'SecItemImport', [:pointer, :pointer,
+                                    :SecExternalFormat,
+                                    :SecExternalItemType,
+                                    :SecItemImportExportFlags,
+                                    :pointer, :pointer, :pointer], :osstatus
+
 end
 
 class Keychain::Key < Sec::Base
