@@ -1,5 +1,8 @@
 module Sec
-  attach_variable 'kSecAttrAccessible', :pointer
+  begin
+    attach_variable 'kSecAttrAccessible', :pointer
+  rescue FFI::NotFoundError #Only available in 10.9
+  end
 
   begin
     attach_variable 'kSecAttrAccessControl', :pointer
@@ -61,8 +64,7 @@ end
 class Keychain::Key < Sec::Base
   register_type 'SecKey'
 
-  ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessible) => :accessible,
-              CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
+  ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
               CF::Base.typecast(Sec::kSecAttrKeyClass) => :key_class,
               CF::Base.typecast(Sec::kSecAttrLabel) => :label,
               CF::Base.typecast(Sec::kSecAttrApplicationLabel) => :application_label,
@@ -79,6 +81,7 @@ class Keychain::Key < Sec::Base
               CF::Base.typecast(Sec::kSecAttrCanWrap) => :can_wrap,
               CF::Base.typecast(Sec::kSecAttrCanUnwrap) => :can_unwrap}
 
+  ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessible)] = :accessible if defined?(Sec::kSecAttrAccessible)
   ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessControl)] = :access_control if defined?(Sec::kSecAttrAccessControl)
 
   INVERSE_ATTR_MAP = ATTR_MAP.invert
