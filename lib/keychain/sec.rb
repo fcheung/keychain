@@ -163,7 +163,7 @@ module Sec
                                         Sec::Query::RETURN_REF => false}.to_cf, result)
       Sec.check_osstatus(status)
 
-      cf_dict = CF::Base.typecast(result.read_pointer)
+      cf_dict = CF::Base.typecast(result.read_pointer).release_on_gc
       update_self_from_dictionary(cf_dict)
     end
   end

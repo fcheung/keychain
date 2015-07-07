@@ -43,7 +43,7 @@ class Keychain::Certificate < Sec::Base
     status = Sec.SecCertificateCopyPublicKey(self, key_ref)
     Sec.check_osstatus(status)
 
-    Keychain::Key.new(key_ref.read_pointer)
+    Keychain::Key.new(key_ref.read_pointer).release_on_gc
   end
 
   def x509

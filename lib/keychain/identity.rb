@@ -25,7 +25,7 @@ class Keychain::Identity < Sec::Base
     status = Sec.SecIdentityCopyCertificate(self, certificate_ref)
     Sec.check_osstatus(status)
 
-    Keychain::Certificate.new(certificate_ref.read_pointer)
+    Keychain::Certificate.new(certificate_ref.read_pointer).release_on_gc
   end
 
   def private_key
@@ -33,7 +33,7 @@ class Keychain::Identity < Sec::Base
     status = Sec.SecIdentityCopyPrivateKey(self, key_ref)
     Sec.check_osstatus(status)
 
-    Keychain::Key.new(key_ref.read_pointer)
+    Keychain::Key.new(key_ref.read_pointer).release_on_gc
   end
 
   def pkcs12(passphrase='')
