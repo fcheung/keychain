@@ -57,6 +57,28 @@ describe Keychain do
     end
   end
 
+  describe 'import' do
+    before(:all) do
+      @keychain = Keychain.create(File.join(Dir.tmpdir, "keychain_spec_#{Time.now.to_i}_#{Time.now.usec}_#{rand(1000)}.keychain"), 'pass')
+      @rsa_key = OpenSSL::PKey::RSA.new(2048).to_s
+    end
+
+    it 'should import item to the keychain' do
+      imported_key = @keychain.import(@rsa_key, ['/usr/bin/codesign']).first
+      imported_key.load_attributes
+      found_key = Keychain::Scope.new(Sec::Classes::KEY, @keychain).all.first
+      expect(imported_key.attributes).to eq(found_key.attributes)
+    end
+
+    it 'should raise an exception for duplicated item' do
+      expect { @keychain.import(@rsa_key) }.to raise_error(Keychain::DuplicateItemError)
+    end
+
+    after(:all) do
+      @keychain.delete
+    end
+  end
+
   describe 'exists?' do
     context 'the keychain exists' do
       it 'should return true' do

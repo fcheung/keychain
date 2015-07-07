@@ -1,5 +1,15 @@
 
 module Sec
+  enum :SecExternalItemType, [:kSecItemTypeUnknown ,
+                              :kSecItemTypePrivateKey,
+                              :kSecItemTypePublicKey,
+                              :kSecItemTypeSessionKey,
+                              :kSecItemTypeCertificate,
+                              :kSecItemTypeAggregate]
+
+  attach_function 'SecAccessCreate', [:pointer, :pointer, :pointer], :osstatus
+  attach_function 'SecTrustedApplicationCreateFromPath', [:string, :pointer], :osstatus
+
   attach_function 'SecKeychainCopyDefault', [:pointer], :osstatus
   attach_function 'SecKeychainDelete', [:keychainref], :osstatus
   attach_function 'SecKeychainOpen', [:string, :pointer], :osstatus
@@ -17,6 +27,14 @@ module Sec
             :lock_on_sleep, :uchar,
             :use_lock_interval, :uchar, #apple ignores this
             :lock_interval, :uint32
+  end
+
+  class Keychain::TrustedApplication < Sec::Base
+    register_type 'SecTrustedApplication'
+  end
+
+  class Keychain::Access < Sec::Base
+    register_type 'SecAccess'
   end
 
   attach_function 'SecKeychainSetSettings', [:keychainref, KeychainSettings], :osstatus
@@ -100,6 +118,38 @@ module Keychain
     # @return [Keychain::Scope] a new scope object
     def generic_passwords
       Scope.new(Sec::Classes::GENERIC, self)
+    end
+
+    # Imports item from string or file to this keychain
+    #
+    # @param [IO, String] input IO object or String with raw data to import
+    # @param [Array <String>] app_list List of applications which will be
+    # permitted to access imported items
+    # @return [Array <SecKeychainItem>] List of imported keychain objects,
+    # each of which may be a SecCertificate, SecKey, or SecIdentity instance
+    def import(input, app_list=[])
+      input = input.read if input.is_a? IO
+
+      # Create array of TrustedApplication objects
+      trusted_apps = get_trusted_apps(app_list)
+
+      # Create an Access object
+      access_buffer = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecAccessCreate(path.to_cf, trusted_apps, access_buffer)
+      Sec.check_osstatus status
+      access = CF::Base.typecast(access_buffer.read_pointer).release_on_gc
+
+      key_params = Sec::SecItemImportExportKeyParameters.new
+      key_params[:accessRef] = access
+
+      # Import item to the keychain
+      cf_data = CF::Data.from_string(input).release_on_gc
+      cf_array = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
+      Sec.check_osstatus status
+      item_array = CF::Base.typecast(cf_array.read_pointer).release_on_gc
+
+      item_array.to_ruby
     end
 
     # returns a description of the keychain
@@ -196,6 +246,17 @@ module Keychain
       status = Sec.SecKeychainCopySettings(self, settings)
       Sec.check_osstatus status
       settings
+    end
+
+    def get_trusted_apps apps
+      trusted_app_array = apps.map do |path|
+        trusted_app_buffer = FFI::MemoryPointer.new(:pointer)
+        status = Sec.SecTrustedApplicationCreateFromPath(
+          path.encode(Encoding::UTF_8), trusted_app_buffer)
+        Sec.check_osstatus(status)
+        CF::Base.typecast(trusted_app_buffer.read_pointer).release_on_gc
+      end
+      trusted_app_array.to_cf
     end
 
     def put_settings settings
