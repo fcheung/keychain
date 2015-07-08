@@ -29,14 +29,6 @@ module Sec
             :lock_interval, :uint32
   end
 
-  class Keychain::TrustedApplication < Sec::Base
-    register_type 'SecTrustedApplication'
-  end
-
-  class Keychain::Access < Sec::Base
-    register_type 'SecAccess'
-  end
-
   attach_function 'SecKeychainSetSettings', [:keychainref, KeychainSettings], :osstatus
   attach_function 'SecKeychainCopySettings', [:keychainref, KeychainSettings], :osstatus
 
@@ -56,6 +48,14 @@ module Sec
 end
 
 module Keychain
+  class TrustedApplication < Sec::Base
+    register_type 'SecTrustedApplication'
+  end
+
+  class Access < Sec::Base
+    register_type 'SecAccess'
+  end
+
   # Wrapper class for individual keychains. Corresponds to a SecKeychainRef
   #
   class Keychain < Sec::Base
