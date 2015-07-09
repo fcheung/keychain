@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Frederick Cheung"]
-  s.date = %q{2015-07-07}
+  s.date = %q{2015-07-09}
   s.description = %q{Ruby wrapper for OS X's keychain }
   s.email = %q{frederick.cheung@gmail.com}
   s.files += Dir["lib/**/*.rb"]
