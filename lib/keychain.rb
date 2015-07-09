@@ -1,6 +1,8 @@
 require 'ffi'
 require 'corefoundation'
 require 'keychain/sec'
+require 'keychain/access'
+require 'keychain/trusted_application'
 require 'keychain/keychain'
 require 'keychain/error'
 require 'keychain/item'
