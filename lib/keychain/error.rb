@@ -6,16 +6,18 @@ end
 # The base class of all keychain related errors
 #
 # The original error code is available as `code`
-class Keychain::Error < StandardError
-  attr_accessor :code
-  def initialize(code)
-    self.code = code
-    description = Sec.SecCopyErrorMessageString(code, nil)
-    if description.null?
-      super("Sec Error #{code}")
-    else
-      description = CF::Base.typecast(description)
-      super("#{description.to_s} (#{code})")
+module Keychain
+  class  Error < StandardError
+    attr_accessor :code
+    def initialize(code)
+      self.code = code
+      description = Sec.SecCopyErrorMessageString(code, nil)
+      if description.null?
+        super("Sec Error #{code}")
+      else
+        description = CF::Base.typecast(description)
+        super("#{description.to_s} (#{code})")
+      end
     end
   end
 end

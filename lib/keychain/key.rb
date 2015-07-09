@@ -67,48 +67,50 @@ module Sec
 
 end
 
-class Keychain::Key < Sec::Base
-  register_type 'SecKey'
+module Keychain
+  class Key < Sec::Base
+    register_type 'SecKey'
 
-  ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
-              CF::Base.typecast(Sec::kSecAttrKeyClass) => :key_class,
-              CF::Base.typecast(Sec::kSecAttrLabel) => :label,
-              CF::Base.typecast(Sec::kSecAttrApplicationLabel) => :application_label,
-              CF::Base.typecast(Sec::kSecAttrIsPermanent) => :is_permanent,
-              CF::Base.typecast(Sec::kSecAttrApplicationTag) => :application_tag,
-              CF::Base.typecast(Sec::kSecAttrKeyType) => :key_type,
-              CF::Base.typecast(Sec::kSecAttrKeySizeInBits) => :size_in_bites,
-              CF::Base.typecast(Sec::kSecAttrEffectiveKeySize) => :effective_key_size,
-              CF::Base.typecast(Sec::kSecAttrCanEncrypt) => :can_encrypt,
-              CF::Base.typecast(Sec::kSecAttrCanDecrypt) => :can_decrypt,
-              CF::Base.typecast(Sec::kSecAttrCanDerive) => :can_derive,
-              CF::Base.typecast(Sec::kSecAttrCanSign) => :can_sign,
-              CF::Base.typecast(Sec::kSecAttrCanVerify) => :can_verify,
-              CF::Base.typecast(Sec::kSecAttrCanWrap) => :can_wrap,
-              CF::Base.typecast(Sec::kSecAttrCanUnwrap) => :can_unwrap}
+    ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
+                CF::Base.typecast(Sec::kSecAttrKeyClass) => :key_class,
+                CF::Base.typecast(Sec::kSecAttrLabel) => :label,
+                CF::Base.typecast(Sec::kSecAttrApplicationLabel) => :application_label,
+                CF::Base.typecast(Sec::kSecAttrIsPermanent) => :is_permanent,
+                CF::Base.typecast(Sec::kSecAttrApplicationTag) => :application_tag,
+                CF::Base.typecast(Sec::kSecAttrKeyType) => :key_type,
+                CF::Base.typecast(Sec::kSecAttrKeySizeInBits) => :size_in_bites,
+                CF::Base.typecast(Sec::kSecAttrEffectiveKeySize) => :effective_key_size,
+                CF::Base.typecast(Sec::kSecAttrCanEncrypt) => :can_encrypt,
+                CF::Base.typecast(Sec::kSecAttrCanDecrypt) => :can_decrypt,
+                CF::Base.typecast(Sec::kSecAttrCanDerive) => :can_derive,
+                CF::Base.typecast(Sec::kSecAttrCanSign) => :can_sign,
+                CF::Base.typecast(Sec::kSecAttrCanVerify) => :can_verify,
+                CF::Base.typecast(Sec::kSecAttrCanWrap) => :can_wrap,
+                CF::Base.typecast(Sec::kSecAttrCanUnwrap) => :can_unwrap}
 
-  ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessible)] = :accessible if defined?(Sec::kSecAttrAccessible)
-  ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessControl)] = :access_control if defined?(Sec::kSecAttrAccessControl)
+    ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessible)] = :accessible if defined?(Sec::kSecAttrAccessible)
+    ATTR_MAP[CF::Base.typecast(Sec::kSecAttrAccessControl)] = :access_control if defined?(Sec::kSecAttrAccessControl)
 
-  INVERSE_ATTR_MAP = ATTR_MAP.invert
-  define_attributes(ATTR_MAP)
+    INVERSE_ATTR_MAP = ATTR_MAP.invert
+    define_attributes(ATTR_MAP)
 
-  def klass
-    Sec::Classes::KEY.to_ruby
-  end
+    def klass
+      Sec::Classes::KEY.to_ruby
+    end
 
-  def export(passphrase = nil, format = :kSecFormatUnknown)
-    flags = Sec::SecItemImportExportKeyParameters.new
-    flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
-    flags[:passphrase] = CF::String.from_string(passphrase).to_ptr if passphrase
+    def export(passphrase = nil, format = :kSecFormatUnknown)
+      flags = Sec::SecItemImportExportKeyParameters.new
+      flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
+      flags[:passphrase] = CF::String.from_string(passphrase).to_ptr if passphrase
 
-    data_ptr = FFI::MemoryPointer.new(:pointer)
-    status = Sec.SecItemExport(self, format, :kSecItemPemArmour, flags, data_ptr)
-    Sec.check_osstatus(status)
+      data_ptr = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecItemExport(self, format, :kSecItemPemArmour, flags, data_ptr)
+      Sec.check_osstatus(status)
 
-    data = CF::Data.new(data_ptr.read_pointer)
-    result = data.to_s
-    data.release
-    result
+      data = CF::Data.new(data_ptr.read_pointer)
+      result = data.to_s
+      data.release
+      result
+    end
   end
 end

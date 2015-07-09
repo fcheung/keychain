@@ -1,3 +1,5 @@
-class Keychain::TrustedApplication < Sec::Base
-  register_type 'SecTrustedApplication'
+module Keychain
+  class TrustedApplication < Sec::Base
+    register_type 'SecTrustedApplication'
+  end
 end
