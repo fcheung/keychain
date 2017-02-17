@@ -16,8 +16,11 @@ module Sec
   attach_function 'SecKeychainGetPath', [:keychainref, :pointer, :pointer], :osstatus
 
   attach_function 'SecKeychainCreate', [:string, :uint32, :pointer, :char, :pointer, :pointer], :osstatus
+
+  attach_function 'SecItemAdd', [:pointer, :pointer], :osstatus
   attach_function 'SecItemCopyMatching', [:pointer, :pointer], :osstatus
-  
+  attach_function 'SecItemUpdate', [:pointer, :pointer], :osstatus
+
   attach_function 'SecKeychainSetSearchList', [:pointer], :osstatus
   attach_function 'SecKeychainCopySearchList', [:pointer], :osstatus
 
