@@ -139,7 +139,7 @@ module Keychain
     def import(input, app_paths = [])
       input = input.read if input.is_a? IO
 
-      apps = paths.map do |path|
+      apps = app_paths.map do |path|
         TrustedApplication.create_from_path(path)
       end
 
