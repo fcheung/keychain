@@ -1,4 +1,6 @@
 module Sec
+  attach_function 'SecKeyCopyPublicKey', [:pointer], :pointer
+
   begin
     attach_variable 'kSecAttrAccessible', :pointer
   rescue FFI::NotFoundError #Only available in 10.9
@@ -24,6 +26,11 @@ module Sec
   attach_variable 'kSecAttrCanVerify', :pointer
   attach_variable 'kSecAttrCanWrap', :pointer
   attach_variable 'kSecAttrCanUnwrap', :pointer
+
+  # kSecAttrKeyClass values
+  attach_variable 'kSecAttrKeyClassPublic', :pointer
+  attach_variable 'kSecAttrKeyClassPrivate', :pointer
+  attach_variable 'kSecAttrKeyClassSymmetric', :pointer
 
   enum :SecItemImportExportFlags, [:kSecItemPemArmour, 1]
 
@@ -70,6 +77,11 @@ end
 module Keychain
   class Key < Sec::Base
     register_type 'SecKey'
+    include AccessMixin
+
+    KEY_CLASS_PUBLIC = CF::Base.typecast(Sec::kSecAttrKeyClassPublic)
+    KEY_CLASS_PRIVATE = CF::Base.typecast(Sec::kSecAttrKeyClassPrivate)
+    KEY_CLASS_SYMMETRIC = CF::Base.typecast(Sec::kSecAttrKeyClassSymmetric)
 
     ATTR_MAP = {CF::Base.typecast(Sec::kSecAttrAccessGroup) => :access_group,
                 CF::Base.typecast(Sec::kSecAttrKeyClass) => :key_class,
@@ -96,6 +108,15 @@ module Keychain
 
     def klass
       Sec::Classes::KEY.to_ruby
+    end
+
+    def public_key
+      if self.key_class == KEY_CLASS_PUBLIC.to_ruby
+        self
+      else
+        pointer = Sec.SecKeyCopyPublicKey(self)
+        self.class.new(pointer)
+      end
     end
 
     def export(passphrase = nil, format = :kSecFormatUnknown)
