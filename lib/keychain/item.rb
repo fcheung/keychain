@@ -57,14 +57,6 @@ module Keychain
       end
     end
 
-    # Removes the item from the associated keychain
-    #
-    def delete
-      status = Sec.SecKeychainItemDelete(self)
-      Sec.check_osstatus(status)
-      self
-    end
-
     # Set a new password for the item
     # @note The new password is not saved into the keychain until you call {Keychain::Item#save!}
     # @param [String] value The new value for the password

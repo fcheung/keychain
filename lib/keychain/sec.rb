@@ -81,7 +81,7 @@ module Sec
     CERTIFICATE =   CF::Base.typecast(Sec.kSecClassCertificate)
     # constant identifying generic passwords (kSecClassGenericPassword)
     GENERIC =   CF::Base.typecast(Sec.kSecClassGenericPassword)
-    # constant identifying generic passwords (kSecClassIdentity)
+    # constant identifying certificates and associated private keys (kSecClassIdentity)
     IDENTITY =   CF::Base.typecast(Sec.kSecClassIdentity)
     # constant identifying internet passwords (kSecClassInternetPassword)
     INTERNET = CF::Base.typecast(Sec.kSecClassInternetPassword)
@@ -110,8 +110,6 @@ module Sec
   #
   # @abstract
   class Base < CF::Base
-    attr_reader :attributes
-
     def self.register_type(type_name)
       Sec.attach_function "#{type_name}GetTypeID", [], CF.find_type(:cftypeid)
       @@type_map[Sec.send("#{type_name}GetTypeID")] = self
@@ -130,11 +128,6 @@ module Sec
       end
     end
 
-    def initialize(ptr)
-      super
-      @attributes = {}
-    end
-
     def update_self_from_dictionary(cf_dict)
       @attributes = cf_dict.inject({}) do |memo, (k,v)|
         if ruby_name = self.class::ATTR_MAP[k]
@@ -149,9 +142,20 @@ module Sec
     # @return [Keychain::Keychain]
     def keychain
       out = FFI::MemoryPointer.new :pointer
-      status = Sec.SecKeychainItemCopyKeychain(self,out)
+      status = Sec.SecKeychainItemCopyKeychain(self, out)
       Sec.check_osstatus(status)
       CF::Base.new(out.read_pointer).release_on_gc
+    end
+
+    # Removes the item from the associated keychain
+    def delete
+      status = Sec.SecKeychainItemDelete(self)
+      Sec.check_osstatus(status)
+      self
+    end
+
+    def attributes
+      @attributes || load_attributes
     end
 
     def load_attributes
