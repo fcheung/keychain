@@ -7,7 +7,6 @@ module Sec
                               :kSecItemTypeCertificate,
                               :kSecItemTypeAggregate]
 
-  attach_function 'SecAccessCreate', [:pointer, :pointer, :pointer], :osstatus
   attach_function 'SecTrustedApplicationCreateFromPath', [:string, :pointer], :osstatus
 
   attach_function 'SecKeychainCopyDefault', [:pointer], :osstatus
@@ -137,17 +136,14 @@ module Keychain
     # permitted to access imported items
     # @return [Array <SecKeychainItem>] List of imported keychain objects,
     # each of which may be a SecCertificate, SecKey, or SecIdentity instance
-    def import(input, app_list=[])
+    def import(input, app_paths = [])
       input = input.read if input.is_a? IO
 
-      # Create array of TrustedApplication objects
-      trusted_apps = get_trusted_apps(app_list)
+      apps = paths.map do |path|
+        TrustedApplication.create_from_path(path)
+      end
 
-      # Create an Access object
-      access_buffer = FFI::MemoryPointer.new(:pointer)
-      status = Sec.SecAccessCreate(path.to_cf, trusted_apps, access_buffer)
-      Sec.check_osstatus status
-      access = CF::Base.typecast(access_buffer.read_pointer)
+      access = Access.create(path, apps)
 
       key_params = Sec::SecItemImportExportKeyParameters.new
       key_params[:accessRef] = access
@@ -156,9 +152,10 @@ module Keychain
       cf_data = CF::Data.from_string(input).release_on_gc
       cf_array = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
-      access.release
       Sec.check_osstatus status
       item_array = CF::Base.typecast(cf_array.read_pointer).release_on_gc
+
+      access.release
 
       item_array.to_ruby
     end
@@ -189,7 +186,7 @@ module Keychain
       io_size = FFI::MemoryPointer.new(:uint32)
       io_size.put_uint32(0, out_buffer.size)
 
-      status = Sec.SecKeychainGetPath(self,io_size, out_buffer)
+      status = Sec.SecKeychainGetPath(self, io_size, out_buffer)
       Sec.check_osstatus(status)
 
       out_buffer.read_string(io_size.get_uint32(0)).force_encoding(Encoding::UTF_8)
@@ -257,17 +254,6 @@ module Keychain
       status = Sec.SecKeychainCopySettings(self, settings)
       Sec.check_osstatus status
       settings
-    end
-
-    def get_trusted_apps apps
-      trusted_app_array = apps.map do |path|
-        trusted_app_buffer = FFI::MemoryPointer.new(:pointer)
-        status = Sec.SecTrustedApplicationCreateFromPath(
-          path.encode(Encoding::UTF_8), trusted_app_buffer)
-        Sec.check_osstatus(status)
-        CF::Base.typecast(trusted_app_buffer.read_pointer).release_on_gc
-      end
-      trusted_app_array.to_cf
     end
 
     def put_settings settings
