@@ -116,6 +116,20 @@ module Keychain
       Scope.new(Sec::Classes::GENERIC, self)
     end
 
+    # Returns a scope for the identities (certificates and private keys) contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def identities
+      Scope.new(Sec::Classes::IDENTITY, self)
+    end
+
+    # Returns a scope for public and private keys contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def keys
+      Scope.new(Sec::Classes::KEY, self)
+    end
+
     # Imports item from string or file to this keychain
     #
     # @param [IO, String] input IO object or String with raw data to import
