@@ -22,28 +22,36 @@ module Sec
   attach_variable 'kSecClassIdentity', :pointer
   attach_variable 'kSecClassKey', :pointer
 
+  # General Item Attribute Keys
   attach_variable 'kSecAttrAccess', :pointer
-  attach_variable 'kSecAttrAccount', :pointer
-  attach_variable 'kSecAttrAuthenticationType', :pointer
-  attach_variable 'kSecAttrComment', :pointer
+  attach_variable 'kSecAttrAccessControl', :pointer
+  attach_variable 'kSecAttrAccessible', :pointer
+  attach_variable 'kSecAttrAccessGroup', :pointer
+  attach_variable 'kSecAttrSynchronizable', :pointer
   attach_variable 'kSecAttrCreationDate', :pointer
-  attach_variable 'kSecAttrCreator', :pointer
+  attach_variable 'kSecAttrModificationDate', :pointer
+  attach_variable 'kSecAttrComment', :pointer
   attach_variable 'kSecAttrDescription', :pointer
-  attach_variable 'kSecAttrGeneric', :pointer
+  attach_variable 'kSecAttrCreator', :pointer
+  attach_variable 'kSecAttrType', :pointer
+  attach_variable 'kSecAttrLabel', :pointer
   attach_variable 'kSecAttrIsInvisible', :pointer
   attach_variable 'kSecAttrIsNegative', :pointer
-  attach_variable 'kSecAttrLabel', :pointer
-  attach_variable 'kSecAttrModificationDate', :pointer
-  attach_variable 'kSecAttrPath', :pointer
-  attach_variable 'kSecAttrPort', :pointer
-  attach_variable 'kSecAttrProtocol', :pointer
+  attach_variable 'kSecAttrSyncViewHint', :pointer
+
+  # Password Attribute Keys
+  attach_variable 'kSecAttrAccount', :pointer
+  attach_variable 'kSecAttrService', :pointer
+  attach_variable 'kSecAttrGeneric', :pointer
   attach_variable 'kSecAttrSecurityDomain', :pointer
   attach_variable 'kSecAttrServer', :pointer
-  attach_variable 'kSecAttrService', :pointer
-  attach_variable 'kSecAttrType', :pointer
+  attach_variable 'kSecAttrProtocol', :pointer
+  attach_variable 'kSecAttrAuthenticationType', :pointer
+  attach_variable 'kSecAttrPort', :pointer
+  attach_variable 'kSecAttrPath', :pointer
 
+  # Item Search Matching Keys
   attach_variable 'kSecMatchSearchList', :pointer
-
   attach_variable 'kSecMatchLimit', :pointer
   attach_variable 'kSecMatchLimitOne', :pointer
   attach_variable 'kSecMatchLimitAll', :pointer
