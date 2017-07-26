@@ -143,10 +143,8 @@ module Keychain
         TrustedApplication.create_from_path(path)
       end
 
-      access = Access.create(path, apps)
-
       key_params = Sec::SecItemImportExportKeyParameters.new
-      key_params[:accessRef] = access
+      key_params[:accessRef] = Access.create(path, apps)
 
       # Import item to the keychain
       cf_data = CF::Data.from_string(input).release_on_gc
@@ -154,8 +152,6 @@ module Keychain
       status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
       Sec.check_osstatus status
       item_array = CF::Base.typecast(cf_array.read_pointer).release_on_gc
-
-      access.release
 
       item_array.to_ruby
     end

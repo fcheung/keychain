@@ -148,6 +148,7 @@ module Keychain
                 CF::Base.typecast(Sec::kSecAttrSubjectKeyID) => :subject_key_id,
                 CF::Base.typecast(Sec::kSecAttrPublicKeyHash) => :public_key_hash}
 
+    ATTR_UPDATABLE = Set.new(ATTR_MAP.values)
 
     OID_MAP = {CF::Base.typecast(Sec::kSecOIDADC_CERT_POLICY) => 'ADC_CERT_POLICY',
                CF::Base.typecast(Sec::kSecOIDAPPLE_CERT_POLICY) => 'APPLE_CERT_POLICY',

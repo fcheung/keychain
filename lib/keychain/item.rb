@@ -32,6 +32,8 @@ module Keychain
                 CF::Base.typecast(Sec::kSecAttrType) => :type,
                 CF::Base.typecast(Sec::kSecClass)    => :klass}
 
+    ATTR_UPDATABLE = Set.new(ATTR_MAP.values - [:created_at, :updated_at])
+
     INVERSE_ATTR_MAP = ATTR_MAP.invert
     define_attributes(ATTR_MAP)
 
