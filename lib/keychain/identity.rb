@@ -47,7 +47,7 @@ module Keychain
       Sec.check_osstatus(status)
 
       data = CF::Data.new(data_ptr.read_pointer)
-      result = OpenSSL::PKCS12.new(data.to_s)
+      result = OpenSSL::PKCS12.new(data.to_s, passphrase)
       data.release
       result
     end
