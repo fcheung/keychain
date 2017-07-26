@@ -110,6 +110,8 @@ module Sec
   #
   # @abstract
   class Base < CF::Base
+    attr_reader :attributes
+
     def self.register_type(type_name)
       Sec.attach_function "#{type_name}GetTypeID", [], CF.find_type(:cftypeid)
       @@type_map[Sec.send("#{type_name}GetTypeID")] = self
@@ -128,8 +130,13 @@ module Sec
       end
     end
 
+    def initialize(ptr)
+      super
+      @attributes = {}
+    end
+
     def update_self_from_dictionary(cf_dict)
-      @attributes = cf_dict.inject({}) do |memo, (k,v)|
+      @attributes = cf_dict.inject(Hash.new) do |memo, (k,v)|
         if ruby_name = self.class::ATTR_MAP[k]
           memo[ruby_name] = v.to_ruby
         end
@@ -154,10 +161,6 @@ module Sec
       self
     end
 
-    def attributes
-      @attributes || load_attributes
-    end
-
     def load_attributes
       result = FFI::MemoryPointer.new :pointer
       status = Sec.SecItemCopyMatching({Sec::Query::SEARCH_LIST => [self.keychain],
@@ -173,11 +176,11 @@ module Sec
 
     def build_new_attributes
       new_attributes = CF::Dictionary.mutable
-      @attributes.each do |k,v|
-        next if k == :created_at || k == :updated_at
-        next if k == :klass && persisted?
-        k = self.class::INVERSE_ATTR_MAP[k]
-        new_attributes[k] = v.to_cf
+      @attributes.each do |key, value|
+        next unless self.class::ATTR_UPDATABLE.include?(key)
+        next if key == :klass && self.persisted?
+        key_cf = self.class::INVERSE_ATTR_MAP[key]
+        new_attributes[key_cf] = value.to_cf
       end
       new_attributes
     end
