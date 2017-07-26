@@ -17,7 +17,7 @@ describe Keychain do
 
   describe 'default' do
     it "should return the login keychain" do
-      expect(Keychain.default.path).to eq(File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain')))
+      expect(Keychain.default.path).to eq(File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain-db')))
     end
   end
 
@@ -84,7 +84,7 @@ describe Keychain do
       it 'should return true' do
         expect(Keychain.default.exists?).to be_truthy
       end
-    end 
+    end
 
     context 'the keychain does not exist' do
       it 'should return false' do
@@ -148,7 +148,7 @@ describe Keychain do
       @keychain_2.delete
       @keychain_3.delete
     end
-    
+
     describe('create') do
       it 'should add a password' do
         item =  @keychain_1.send(subject).create(create_arguments)
@@ -157,7 +157,7 @@ describe Keychain do
         expect(item.password).to eq('some-password')
       end
 
-      it 'should be findable' do        
+      it 'should be findable' do
         @keychain_1.send(subject).create(create_arguments)
         item = @keychain_1.send(subject).where(search_for_created_arguments).first
         expect(item.password).to eq('some-password')
