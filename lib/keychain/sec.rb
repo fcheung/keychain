@@ -64,25 +64,6 @@ module Sec
   attach_variable 'kSecValueData', :pointer
   attach_variable 'kSecUseKeychain', :pointer
 
-  # Query options for use with SecCopyMatching, SecItemUpdate
-  #
-  module Query
-    #key identifying the class of an item (kSecClass)
-    CLASS = CF::Base.typecast(Sec.kSecClass)
-    #key speciying the list of keychains to search (kSecMatchSearchList)
-    SEARCH_LIST = CF::Base.typecast(Sec.kSecMatchSearchList)
-    #key indicating the list of specific keychain items to the scope the search to
-    ITEM_LIST = CF::Base.typecast(Sec.kSecMatchItemList)
-    #key indicating whether to return attributes (kSecReturnAttributes)
-    RETURN_ATTRIBUTES = CF::Base.typecast(Sec.kSecReturnAttributes)
-    #key indicating whether to return the SecKeychainItemRef (kSecReturnRef)
-    RETURN_REF = CF::Base.typecast(Sec.kSecReturnRef)
-    #key indicating whether to return the password data (kSecReturnData)
-    RETURN_DATA = CF::Base.typecast(Sec.kSecReturnData)
-    #key indicating which keychain to use for the operation (kSecUseKeychain)
-    KEYCHAIN = CF::Base.typecast(Sec.kSecUseKeychain)
-  end
-
   # defines constants for use as the class of an item
   module Classes
     # constant identifying certificates (kSecClassCertificate)

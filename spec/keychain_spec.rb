@@ -197,7 +197,7 @@ describe Keychain do
 
         context 'when the limit is option is set' do
           it 'should limit the return set' do
-            expect(Keychain.send(subject).where(search_arguments_with_multiple_results).limit(1).all.length).to eq(1)
+            expect(Keychain.send(subject).where(search_arguments_with_multiple_results.merge(:limit => 1)).all.length).to eq(1)
           end
         end
 
