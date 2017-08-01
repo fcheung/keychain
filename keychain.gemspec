@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Ruby wrapper for  OS X's keychain}  
   s.required_ruby_version = '>= 1.9.2'
 
-  s.add_runtime_dependency "ffi"
+  s.add_runtime_dependency "ffi", ">= 1.9.18"
   s.add_runtime_dependency "corefoundation", "~>0.2.0"
   s.add_development_dependency "rspec", '>= 3.6.0'
   s.add_development_dependency "rake", '>= 12.0.0'
