@@ -1,4 +1,3 @@
-
 module Sec
   attach_function 'SecKeychainItemDelete', [:pointer], :osstatus
   attach_function 'SecKeychainItemCopyKeychain', [:pointer, :pointer], :osstatus
