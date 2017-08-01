@@ -1,4 +1,5 @@
 require 'ffi'
+require 'set'
 require 'corefoundation'
 require 'keychain/sec'
 require 'keychain/access'
