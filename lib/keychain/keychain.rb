@@ -115,6 +115,13 @@ module Keychain
       Scope.new(Sec::Classes::GENERIC, self)
     end
 
+    # Returns a scope for the certificates contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def certificates
+      Scope.new(Sec::Classes::CERTIFICATE, self)
+    end
+
     # Returns a scope for the identities (certificates and private keys) contained in this keychain
     #
     # @return [Keychain::Scope] a new scope object
