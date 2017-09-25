@@ -22,28 +22,36 @@ module Sec
   attach_variable 'kSecClassIdentity', :pointer
   attach_variable 'kSecClassKey', :pointer
 
+  # General Item Attribute Keys
   attach_variable 'kSecAttrAccess', :pointer
-  attach_variable 'kSecAttrAccount', :pointer
-  attach_variable 'kSecAttrAuthenticationType', :pointer
-  attach_variable 'kSecAttrComment', :pointer
+  attach_variable 'kSecAttrAccessControl', :pointer
+  attach_variable 'kSecAttrAccessible', :pointer
+  attach_variable 'kSecAttrAccessGroup', :pointer
+  attach_variable 'kSecAttrSynchronizable', :pointer
   attach_variable 'kSecAttrCreationDate', :pointer
-  attach_variable 'kSecAttrCreator', :pointer
+  attach_variable 'kSecAttrModificationDate', :pointer
+  attach_variable 'kSecAttrComment', :pointer
   attach_variable 'kSecAttrDescription', :pointer
-  attach_variable 'kSecAttrGeneric', :pointer
+  attach_variable 'kSecAttrCreator', :pointer
+  attach_variable 'kSecAttrType', :pointer
+  attach_variable 'kSecAttrLabel', :pointer
   attach_variable 'kSecAttrIsInvisible', :pointer
   attach_variable 'kSecAttrIsNegative', :pointer
-  attach_variable 'kSecAttrLabel', :pointer
-  attach_variable 'kSecAttrModificationDate', :pointer
-  attach_variable 'kSecAttrPath', :pointer
-  attach_variable 'kSecAttrPort', :pointer
-  attach_variable 'kSecAttrProtocol', :pointer
+  attach_variable 'kSecAttrSyncViewHint', :pointer
+
+  # Password Attribute Keys
+  attach_variable 'kSecAttrAccount', :pointer
+  attach_variable 'kSecAttrService', :pointer
+  attach_variable 'kSecAttrGeneric', :pointer
   attach_variable 'kSecAttrSecurityDomain', :pointer
   attach_variable 'kSecAttrServer', :pointer
-  attach_variable 'kSecAttrService', :pointer
-  attach_variable 'kSecAttrType', :pointer
+  attach_variable 'kSecAttrProtocol', :pointer
+  attach_variable 'kSecAttrAuthenticationType', :pointer
+  attach_variable 'kSecAttrPort', :pointer
+  attach_variable 'kSecAttrPath', :pointer
 
+  # Item Search Matching Keys
   attach_variable 'kSecMatchSearchList', :pointer
-
   attach_variable 'kSecMatchLimit', :pointer
   attach_variable 'kSecMatchLimitOne', :pointer
   attach_variable 'kSecMatchLimitAll', :pointer
@@ -56,32 +64,13 @@ module Sec
   attach_variable 'kSecValueData', :pointer
   attach_variable 'kSecUseKeychain', :pointer
 
-  # Query options for use with SecCopyMatching, SecItemUpdate
-  #
-  module Query
-    #key identifying the class of an item (kSecClass)
-    CLASS = CF::Base.typecast(Sec.kSecClass)
-    #key speciying the list of keychains to search (kSecMatchSearchList)
-    SEARCH_LIST = CF::Base.typecast(Sec.kSecMatchSearchList)
-    #key indicating the list of specific keychain items to the scope the search to
-    ITEM_LIST = CF::Base.typecast(Sec.kSecMatchItemList)
-    #key indicating whether to return attributes (kSecReturnAttributes)
-    RETURN_ATTRIBUTES = CF::Base.typecast(Sec.kSecReturnAttributes)
-    #key indicating whether to return the SecKeychainItemRef (kSecReturnRef)
-    RETURN_REF = CF::Base.typecast(Sec.kSecReturnRef)
-    #key indicating whether to return the password data (kSecReturnData)
-    RETURN_DATA = CF::Base.typecast(Sec.kSecReturnData)
-    #key indicating which keychain to use for the operation (kSecUseKeychain)
-    KEYCHAIN = CF::Base.typecast(Sec.kSecUseKeychain)
-  end
-
   # defines constants for use as the class of an item
   module Classes
     # constant identifying certificates (kSecClassCertificate)
     CERTIFICATE =   CF::Base.typecast(Sec.kSecClassCertificate)
     # constant identifying generic passwords (kSecClassGenericPassword)
     GENERIC =   CF::Base.typecast(Sec.kSecClassGenericPassword)
-    # constant identifying generic passwords (kSecClassIdentity)
+    # constant identifying certificates and associated private keys (kSecClassIdentity)
     IDENTITY =   CF::Base.typecast(Sec.kSecClassIdentity)
     # constant identifying internet passwords (kSecClassInternetPassword)
     INTERNET = CF::Base.typecast(Sec.kSecClassInternetPassword)
@@ -136,7 +125,7 @@ module Sec
     end
 
     def update_self_from_dictionary(cf_dict)
-      @attributes = cf_dict.inject({}) do |memo, (k,v)|
+      @attributes = cf_dict.inject(Hash.new) do |memo, (k,v)|
         if ruby_name = self.class::ATTR_MAP[k]
           memo[ruby_name] = v.to_ruby
         end
@@ -149,9 +138,16 @@ module Sec
     # @return [Keychain::Keychain]
     def keychain
       out = FFI::MemoryPointer.new :pointer
-      status = Sec.SecKeychainItemCopyKeychain(self,out)
+      status = Sec.SecKeychainItemCopyKeychain(self, out)
       Sec.check_osstatus(status)
       CF::Base.new(out.read_pointer).release_on_gc
+    end
+
+    # Removes the item from the associated keychain
+    def delete
+      status = Sec.SecKeychainItemDelete(self)
+      Sec.check_osstatus(status)
+      self
     end
 
     def load_attributes
@@ -165,6 +161,40 @@ module Sec
 
       cf_dict = CF::Base.typecast(result.read_pointer).release_on_gc
       update_self_from_dictionary(cf_dict)
+    end
+
+    def build_new_attributes
+      new_attributes = CF::Dictionary.mutable
+      @attributes.each do |key, value|
+        next unless self.class::ATTR_UPDATABLE.include?(key)
+        next if key == :klass && self.persisted?
+        key_cf = self.class::INVERSE_ATTR_MAP[key]
+        new_attributes[key_cf] = value.to_cf
+      end
+      new_attributes
+    end
+
+    def update
+      status = Sec.SecItemUpdate({Sec::Query::SEARCH_LIST => [self.keychain],
+                                  Sec::Query::ITEM_LIST => [self],
+                                  Sec::Query::CLASS => klass}.to_cf, build_new_attributes)
+      Sec.check_osstatus(status)
+
+      result = FFI::MemoryPointer.new :pointer
+      query = build_refresh_query
+      status = Sec.SecItemCopyMatching(query, result)
+      Sec.check_osstatus(status)
+      cf_dict = CF::Base.typecast(result.read_pointer)
+    end
+
+    def build_refresh_query
+      query = CF::Dictionary.mutable
+      query[Sec::Query::SEARCH_LIST] = CF::Array.immutable([self.keychain])
+      query[Sec::Query::ITEM_LIST] = CF::Array.immutable([self])
+      query[Sec::Query::RETURN_ATTRIBUTES] = CF::Boolean::TRUE
+      query[Sec::Query::RETURN_REF] = CF::Boolean::TRUE
+      query[Sec::Query::CLASS] = klass.to_cf
+      query
     end
   end
 
@@ -192,6 +222,4 @@ module Sec
       end
     end
   end
-
-
 end

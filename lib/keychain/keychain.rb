@@ -7,7 +7,6 @@ module Sec
                               :kSecItemTypeCertificate,
                               :kSecItemTypeAggregate]
 
-  attach_function 'SecAccessCreate', [:pointer, :pointer, :pointer], :osstatus
   attach_function 'SecTrustedApplicationCreateFromPath', [:string, :pointer], :osstatus
 
   attach_function 'SecKeychainCopyDefault', [:pointer], :osstatus
@@ -16,8 +15,11 @@ module Sec
   attach_function 'SecKeychainGetPath', [:keychainref, :pointer, :pointer], :osstatus
 
   attach_function 'SecKeychainCreate', [:string, :uint32, :pointer, :char, :pointer, :pointer], :osstatus
+
+  attach_function 'SecItemAdd', [:pointer, :pointer], :osstatus
   attach_function 'SecItemCopyMatching', [:pointer, :pointer], :osstatus
-  
+  attach_function 'SecItemUpdate', [:pointer, :pointer], :osstatus
+
   attach_function 'SecKeychainSetSearchList', [:pointer], :osstatus
   attach_function 'SecKeychainCopySearchList', [:pointer], :osstatus
 
@@ -113,6 +115,27 @@ module Keychain
       Scope.new(Sec::Classes::GENERIC, self)
     end
 
+    # Returns a scope for the certificates contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def certificates
+      Scope.new(Sec::Classes::CERTIFICATE, self)
+    end
+
+    # Returns a scope for the identities (certificates and private keys) contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def identities
+      Scope.new(Sec::Classes::IDENTITY, self)
+    end
+
+    # Returns a scope for public and private keys contained in this keychain
+    #
+    # @return [Keychain::Scope] a new scope object
+    def keys
+      Scope.new(Sec::Classes::KEY, self)
+    end
+
     # Imports item from string or file to this keychain
     #
     # @param [IO, String] input IO object or String with raw data to import
@@ -120,26 +143,20 @@ module Keychain
     # permitted to access imported items
     # @return [Array <SecKeychainItem>] List of imported keychain objects,
     # each of which may be a SecCertificate, SecKey, or SecIdentity instance
-    def import(input, app_list=[])
+    def import(input, app_paths = [nil])
       input = input.read if input.is_a? IO
 
-      # Create array of TrustedApplication objects
-      trusted_apps = get_trusted_apps(app_list)
-
-      # Create an Access object
-      access_buffer = FFI::MemoryPointer.new(:pointer)
-      status = Sec.SecAccessCreate(path.to_cf, trusted_apps, access_buffer)
-      Sec.check_osstatus status
-      access = CF::Base.typecast(access_buffer.read_pointer)
+      apps = app_paths.map do |path|
+        TrustedApplication.create_from_path(path)
+      end
 
       key_params = Sec::SecItemImportExportKeyParameters.new
-      key_params[:accessRef] = access
+      key_params[:accessRef] = Access.create(path, apps)
 
       # Import item to the keychain
       cf_data = CF::Data.from_string(input).release_on_gc
       cf_array = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
-      access.release
       Sec.check_osstatus status
       item_array = CF::Base.typecast(cf_array.read_pointer).release_on_gc
 
@@ -172,7 +189,7 @@ module Keychain
       io_size = FFI::MemoryPointer.new(:uint32)
       io_size.put_uint32(0, out_buffer.size)
 
-      status = Sec.SecKeychainGetPath(self,io_size, out_buffer)
+      status = Sec.SecKeychainGetPath(self, io_size, out_buffer)
       Sec.check_osstatus(status)
 
       out_buffer.read_string(io_size.get_uint32(0)).force_encoding(Encoding::UTF_8)
@@ -240,17 +257,6 @@ module Keychain
       status = Sec.SecKeychainCopySettings(self, settings)
       Sec.check_osstatus status
       settings
-    end
-
-    def get_trusted_apps apps
-      trusted_app_array = apps.map do |path|
-        trusted_app_buffer = FFI::MemoryPointer.new(:pointer)
-        status = Sec.SecTrustedApplicationCreateFromPath(
-          path.encode(Encoding::UTF_8), trusted_app_buffer)
-        Sec.check_osstatus(status)
-        CF::Base.typecast(trusted_app_buffer.read_pointer).release_on_gc
-      end
-      trusted_app_array.to_cf
     end
 
     def put_settings settings

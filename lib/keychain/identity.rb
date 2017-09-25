@@ -13,6 +13,7 @@ module Keychain
     register_type 'SecIdentity'
 
     ATTR_MAP = Certificate::ATTR_MAP.merge(Key::ATTR_MAP)
+    ATTR_UPDATABLE = Certificate::ATTR_UPDATABLE.merge(Key::ATTR_UPDATABLE)
 
     INVERSE_ATTR_MAP = ATTR_MAP.invert
     define_attributes(ATTR_MAP)
@@ -47,7 +48,7 @@ module Keychain
       Sec.check_osstatus(status)
 
       data = CF::Data.new(data_ptr.read_pointer)
-      result = OpenSSL::PKCS12.new(data.to_s)
+      result = OpenSSL::PKCS12.new(data.to_s, passphrase)
       data.release
       result
     end

@@ -1,8 +1,5 @@
-
 module Sec
   attach_function 'SecKeychainItemDelete', [:pointer], :osstatus
-  attach_function 'SecItemAdd', [:pointer, :pointer], :osstatus
-  attach_function 'SecItemUpdate', [:pointer, :pointer], :osstatus
   attach_function 'SecKeychainItemCopyKeychain', [:pointer, :pointer], :osstatus
 end
 
@@ -34,6 +31,8 @@ module Keychain
                 CF::Base.typecast(Sec::kSecAttrType) => :type,
                 CF::Base.typecast(Sec::kSecClass)    => :klass}
 
+    ATTR_UPDATABLE = Set.new(ATTR_MAP.values - [:created_at, :updated_at])
+
     INVERSE_ATTR_MAP = ATTR_MAP.invert
     define_attributes(ATTR_MAP)
 
@@ -57,14 +56,6 @@ module Keychain
       else
         super
       end
-    end
-
-    # Removes the item from the associated keychain
-    #
-    def delete
-      status = Sec.SecKeychainItemDelete(self)
-      Sec.check_osstatus(status)
-      self
     end
 
     # Set a new password for the item
@@ -129,19 +120,6 @@ module Keychain
       cf_dict = CF::Base.typecast(result.read_pointer)
     end
 
-    def update
-      status = Sec.SecItemUpdate({Sec::Query::SEARCH_LIST => [self.keychain],
-                                  Sec::Query::ITEM_LIST => [self],
-                                  Sec::Query::CLASS => klass}.to_cf, build_new_attributes);
-      Sec.check_osstatus(status)
-
-      result = FFI::MemoryPointer.new :pointer
-      query = build_refresh_query
-      status = Sec.SecItemCopyMatching(query, result);
-      Sec.check_osstatus(status)
-      cf_dict = CF::Base.typecast(result.read_pointer)
-    end
-      
     def build_create_query options
       query = CF::Dictionary.mutable
       query[Sec::Value::DATA] = CF::Data.from_string(@unsaved_password) if @unsaved_password
@@ -151,24 +129,8 @@ module Keychain
       query
     end
 
-    def build_refresh_query
-      query = CF::Dictionary.mutable
-      query[Sec::Query::SEARCH_LIST] = CF::Array.immutable([self.keychain])
-      query[Sec::Query::ITEM_LIST] = CF::Array.immutable([self])
-      query[Sec::Query::RETURN_ATTRIBUTES] = CF::Boolean::TRUE
-      query[Sec::Query::RETURN_REF] = CF::Boolean::TRUE
-      query[Sec::Query::CLASS] = klass.to_cf
-      query
-    end
-
     def build_new_attributes
-      new_attributes = CF::Dictionary.mutable
-      @attributes.each do |k,v|
-        next if k == :created_at || k == :updated_at
-        next if k == :klass && persisted?
-        k = self.class::INVERSE_ATTR_MAP[k]
-        new_attributes[k] = v.to_cf
-      end
+      new_attributes = super
       new_attributes[Sec::Value::DATA] = CF::Data.from_string(@unsaved_password) if @unsaved_password
       new_attributes
     end

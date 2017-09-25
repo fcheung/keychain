@@ -4,12 +4,13 @@ describe Keychain::Identity do
   before(:context) do
     Keychain.user_interaction_allowed = false
     @keychain = Keychain.open(File.join(File.dirname(__FILE__), 'spec.keychain'))
-    @keychain.unlock! 'DummyPassword'
-
+    @keychain.unlock!('DummyPassword')
   end
+
   after(:context) do
     Keychain.user_interaction_allowed = true
   end
+
   describe 'query' do
     it 'should return a identity' do
       scope = Keychain::Scope.new(Sec::Classes::IDENTITY, @keychain)
@@ -33,10 +34,11 @@ describe Keychain::Identity do
     end
 
     #this fails on travis - not sure 100% why yet
-    skip 'should be exportable to pkcs12' do
+    it 'should be exportable to pkcs12' do
       scope = Keychain::Scope.new(Sec::Classes::IDENTITY, @keychain)
       identity = scope.all.first
-      expect(identity.pkcs12).to be_kind_of(OpenSSL::PKCS12)
+      pkcs12 = identity.pkcs12('passphrase')
+      expect(pkcs12).to be_kind_of(OpenSSL::PKCS12)
     end
   end
 end
