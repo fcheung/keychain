@@ -143,7 +143,7 @@ module Keychain
     # permitted to access imported items
     # @return [Array <SecKeychainItem>] List of imported keychain objects,
     # each of which may be a SecCertificate, SecKey, or SecIdentity instance
-    def import(input, app_paths = [])
+    def import(input, app_paths = [nil])
       input = input.read if input.is_a? IO
 
       apps = app_paths.map do |path|
