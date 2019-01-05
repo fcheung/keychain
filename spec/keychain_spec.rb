@@ -17,7 +17,7 @@ describe Keychain do
 
   describe 'default' do
     it "should return the login keychain" do
-      expect(Keychain.default.path).to eq(File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain')))
+      expect(Keychain.default.path).to eq(File.expand_path(File.join(ENV['HOME'], 'Library','Keychains', 'login.keychain-db')))
     end
   end
 
