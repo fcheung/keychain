@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Frederick Cheung"]
-  s.date = %q{2015-07-07}
+  s.date = %q{2015-07-09}
   s.description = %q{Ruby wrapper for OS X's keychain }
   s.email = %q{frederick.cheung@gmail.com}
   s.files += Dir["lib/**/*.rb"]
@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "corefoundation", "~>0.2.0"
   s.add_development_dependency "rspec", '~> 3.3', '>= 3.3.0'
   s.add_development_dependency "rake", '~> 10.4', '>= 10.4.2'
-  s.add_development_dependency "yard", '~> 0.8.7'
+  s.add_development_dependency "yard", '~> 0.9.11'
   s.add_development_dependency "redcarpet", '~>3.2', '>= 3.2.3'
 
 end

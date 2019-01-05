@@ -1,16 +1,19 @@
-[![Build Status](https://travis-ci.org/fcheung/keychain.png)](https://travis-ci.org/fcheung/keychain)
+[![Build Status](https://travis-ci.org/fcheung/keychain.svg?branch=master)](https://travis-ci.org/fcheung/keychain)
 
-A set of ruby bindings for the OS X keychain, written using ffi
+A set of ruby bindings for the OS X keychain, written using ffi.
 
 Installation
 ============
 
-    gem install ruby-keychain
+```
+$ gem install ruby-keychain
+```
 
-or in your gemfile,
+or in your `Gemfile`:
 
-    gem 'ruby-keychain', :require => 'keychain'
-
+```ruby
+gem 'ruby-keychain', :require => 'keychain'
+```
 
 Introduction
 ============
@@ -23,26 +26,33 @@ Working with keychains
 
 Most operations will act on either the default keychain, or the default keychain search list. You can obtain specific keychains with
 
-    Keychain.default #the default keychain, usually /Users/<username>/Library/Keychains/<username>.keychain
-    Keychain.open(path) #opens a keychain file
-    Keychain.create(path, password) # creates a new keychain at the specified path, with the specified password
-                                    # omit the password to make the keychain prompt the user
-
+```ruby
+Keychain.default # the default keychain, usually /Users/<username>/Library/Keychains/<username>.keychain
+Keychain.open(path) # opens a keychain file
+Keychain.create(path, password) # creates a new keychain at the specified path, with the specified password
+                                # omit the password to make the keychain prompt the user
+```
 
 Searching for Keychain Items
 =============================
 
 The top level constant `Keychain` as well as individual keychain objects have two methods `internet_passwords` and `generic_passwords` that return scope like objects. You can do
 
-    Keychain.internet_passwords.where(:server => 'example.com').all
+```ruby
+Keychain.internet_passwords.where(:server => 'example.com').all
+```
 
 to return Keychain::Item objects for that server
 
-    Keychain.internet_passwords.where(:server => 'example.com').first
+```ruby
+Keychain.internet_passwords.where(:server => 'example.com').first
+```
 
 to return the first Keychain::Item for that server or
 
-    Keychain.internet_passwords.where(:server => 'example.com').limit(4).all
+```ruby
+Keychain.internet_passwords.where(:server => 'example.com').limit(4).all
+```
 
 to return up to 4 Keychain::Item for that server.
 
@@ -50,14 +60,17 @@ to return up to 4 Keychain::Item for that server.
 
 You can restrict the search to a specific keychain with
 
-    some_keychain.internet_passwords.where(:server => 'example.com').all
+```ruby
+some_keychain.internet_passwords.where(:server => 'example.com').all
+```
 
 returns matching `Keychain::Item` from the specified keychain.
 
 or to an arbitrary list of keychains with
 
-    Keychain.internet_passwords.in(keychain_1, keychain2).all
-
+```ruby
+Keychain.internet_passwords.in(keychain_1, keychain2).all
+```
 
 Finding a Keychain::Item won't prompt the user for a password if the keychain is unlocked. Calling the password accessor method of the item may prompt the user for their password depending on the keychain item access settings.
 
@@ -69,15 +82,19 @@ Creating keychain items
 
 In the default keychain:
 
-    Keychain.internet_passwords.create(:server => 'example.com', :protocol => Keychain::Protocols::HTTP, :password => 'secret', :account => 'bob')
+```ruby
+Keychain.internet_passwords.create(:server => 'example.com', :protocol => Keychain::Protocols::HTTP, :password => 'secret', :account => 'bob')
 
-    or
+# or
 
-    Keychain.generic_passwords.create(:service => 'AWS', :password => 'secret', :account => 'bob')
+Keychain.generic_passwords.create(:service => 'AWS', :password => 'secret', :account => 'bob')
+```
 
 In a specific keychain
 
-    some_keychain.internet_passwords.create(...)
+```ruby
+some_keychain.internet_passwords.create(...)
+```
 
 by default keychain items are only readable by the application that created them, however when running a ruby script the application is ruby: by default other ruby scripts will be able to read the items (if the keychain is unlocked).
 
@@ -99,4 +116,3 @@ Compatibility
 =============
 Requires ruby 1.9 due to use of encoding related methods. Should work in MRI and jruby. Not compatible with rubinius due to rubinius' ffi implemenation
 not supporting certain features
-
