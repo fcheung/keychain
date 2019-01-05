@@ -8,46 +8,48 @@ module Sec
   attach_variable 'kSecAttrLabel', :pointer
 end
 
-class Keychain::Identity < Sec::Base
-  register_type 'SecIdentity'
+module Keychain
+  class Identity < Sec::Base
+    register_type 'SecIdentity'
 
-  ATTR_MAP = Keychain::Certificate::ATTR_MAP.merge(Keychain::Key::ATTR_MAP)
+    ATTR_MAP = Certificate::ATTR_MAP.merge(Key::ATTR_MAP)
 
-  INVERSE_ATTR_MAP = ATTR_MAP.invert
-  define_attributes(ATTR_MAP)
+    INVERSE_ATTR_MAP = ATTR_MAP.invert
+    define_attributes(ATTR_MAP)
 
-  def klass
-    Sec::Classes::IDENTITY.to_ruby
-  end
+    def klass
+      Sec::Classes::IDENTITY.to_ruby
+    end
 
-  def certificate
-    certificate_ref = FFI::MemoryPointer.new(:pointer)
-    status = Sec.SecIdentityCopyCertificate(self, certificate_ref)
-    Sec.check_osstatus(status)
+    def certificate
+      certificate_ref = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecIdentityCopyCertificate(self, certificate_ref)
+      Sec.check_osstatus(status)
 
-    Keychain::Certificate.new(certificate_ref.read_pointer).release_on_gc
-  end
+      Certificate.new(certificate_ref.read_pointer).release_on_gc
+    end
 
-  def private_key
-    key_ref = FFI::MemoryPointer.new(:pointer)
-    status = Sec.SecIdentityCopyPrivateKey(self, key_ref)
-    Sec.check_osstatus(status)
+    def private_key
+      key_ref = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecIdentityCopyPrivateKey(self, key_ref)
+      Sec.check_osstatus(status)
 
-    Keychain::Key.new(key_ref.read_pointer).release_on_gc
-  end
+      Key.new(key_ref.read_pointer).release_on_gc
+    end
 
-  def pkcs12(passphrase='')
-    flags = Sec::SecItemImportExportKeyParameters.new
-    flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
-    flags[:passphrase] = CF::String.from_string(passphrase).to_ptr
+    def pkcs12(passphrase='')
+      flags = Sec::SecItemImportExportKeyParameters.new
+      flags[:version] = Sec::SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION
+      flags[:passphrase] = CF::String.from_string(passphrase).to_ptr
 
-    data_ptr = FFI::MemoryPointer.new(:pointer)
-    status = Sec.SecItemExport(self, :kSecFormatPKCS12, 0, flags, data_ptr)
-    Sec.check_osstatus(status)
+      data_ptr = FFI::MemoryPointer.new(:pointer)
+      status = Sec.SecItemExport(self, :kSecFormatPKCS12, 0, flags, data_ptr)
+      Sec.check_osstatus(status)
 
-    data = CF::Data.new(data_ptr.read_pointer)
-    result = OpenSSL::PKCS12.new(data.to_s)
-    data.release
-    result
+      data = CF::Data.new(data_ptr.read_pointer)
+      result = OpenSSL::PKCS12.new(data.to_s)
+      data.release
+      result
+    end
   end
 end
