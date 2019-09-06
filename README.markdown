@@ -101,7 +101,7 @@ by default keychain items are only readable by the application that created them
 Using keychain items
 =====================
 
-The `Keychain::Item` class has accessors for all its attributes, for the full list of attributes see `Sec::ATTR_MAP`
+The `Keychain::Item` class has accessors for all its attributes, for the full list of attributes see [`Keychain::Item::ATTR_MAP`](https://github.com/fcheung/keychain/blob/master/lib/keychain/item.rb)
 
 All strings returned are utf-8 encoded. Be careful not to set attribute values to strings with the ASCII_8BIT encoding as this will cause them to be treated as raw data rather than string. The exception to this is password data which the keychain api defines as being arbitrary binary data. When storing an actual password it is customary to use utf-8. The password data will always be returned as raw binary data
 
