@@ -39,19 +39,19 @@ Searching for Keychain Items
 The top level constant `Keychain` as well as individual keychain objects have two methods `internet_passwords` and `generic_passwords` that return scope like objects. You can do
 
 ```ruby
-Keychain.internet_passwords.where(:server => 'example.com').all
+Keychain.internet_passwords.where(server: 'example.com').all
 ```
 
 to return Keychain::Item objects for that server
 
 ```ruby
-Keychain.internet_passwords.where(:server => 'example.com').first
+Keychain.internet_passwords.where(server: 'example.com').first
 ```
 
 to return the first Keychain::Item for that server or
 
 ```ruby
-Keychain.internet_passwords.where(:server => 'example.com').limit(4).all
+Keychain.internet_passwords.where(server: 'example.com').limit(4).all
 ```
 
 to return up to 4 Keychain::Item for that server.
@@ -61,7 +61,7 @@ to return up to 4 Keychain::Item for that server.
 You can restrict the search to a specific keychain with
 
 ```ruby
-some_keychain.internet_passwords.where(:server => 'example.com').all
+some_keychain.internet_passwords.where(server: 'example.com').all
 ```
 
 returns matching `Keychain::Item` from the specified keychain.
@@ -83,11 +83,11 @@ Creating keychain items
 In the default keychain:
 
 ```ruby
-Keychain.internet_passwords.create(:server => 'example.com', :protocol => Keychain::Protocols::HTTP, :password => 'secret', :account => 'bob')
+Keychain.internet_passwords.create(server: 'example.com', protocol: Keychain::Protocols::HTTP, password: 'secret', account: 'bob')
 
 # or
 
-Keychain.generic_passwords.create(:service => 'AWS', :password => 'secret', :account => 'bob')
+Keychain.generic_passwords.create(service: 'AWS', password: 'secret', account: 'bob')
 ```
 
 In a specific keychain
@@ -97,6 +97,19 @@ some_keychain.internet_passwords.create(...)
 ```
 
 by default keychain items are only readable by the application that created them, however when running a ruby script the application is ruby: by default other ruby scripts will be able to read the items (if the keychain is unlocked).
+
+Updating keychain items
+=========================
+
+Example:
+```
+Keychain.generic_passwords.create(service: 'AWS', password: 'secret', account: 'bob')
+item = Keychain.generic_passwords.where(service: 'AWS')
+item.password # outputs 'secret'
+item.password = 'better_secret'
+item.save!
+item.password # outputs 'better_secret'
+```
 
 Using keychain items
 =====================
