@@ -12,6 +12,22 @@ require 'keychain/identity'
 require 'keychain/scope'
 require 'keychain/protocols'
 # top level constant for this library
+
+
+module CF
+  # The base class for all of the wrapper classes in CF module.
+  class Base
+    # @param [FFI::Pointer] pointer The pointer to wrap
+    def initialize(pointer)
+      @ptr = FFI::Pointer.new(pointer)
+      if pointer != 0
+        ObjectSpace.define_finalizer(self, self.class.finalize(ptr))
+        CF.retain(ptr)
+      end
+    end
+  end
+end
+
 module Keychain
   class << self
     # creates a new keychain file and adds it to the keychain search path ( SecKeychainCreate )
