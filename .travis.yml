@@ -1,8 +1,0 @@
-language: ruby
-os: osx
-script: bundle exec rake
-rvm:
-  - 2.6.9
-  - 2.7.3
-  - 3.0.3
-  - 3.1.1
