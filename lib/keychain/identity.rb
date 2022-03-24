@@ -48,7 +48,6 @@ module Keychain
 
       data = CF::Data.new(data_ptr.read_pointer)
       result = OpenSSL::PKCS12.new(data.to_s, passphrase)
-      data.release
       result
     end
   end
