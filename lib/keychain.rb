@@ -19,11 +19,11 @@ module CF
   class Base
     # @param [FFI::Pointer] pointer The pointer to wrap
     def initialize(pointer)
-      @ptr = FFI::Pointer.new(pointer)
-      if pointer != 0
-        ObjectSpace.define_finalizer(self, self.class.finalize(ptr))
-        CF.retain(ptr)
+      if pointer.is_a?(Integer) && pointer == 0
+        return
       end
+      ObjectSpace.define_finalizer(self, self.class.finalize(ptr))
+      CF.retain(ptr)
     end
   end
 end
