@@ -99,7 +99,9 @@ module Keychain
       else
         cf_dict = create(options)
         self.ptr = cf_dict[Sec::Value::REF].to_ptr
-        self.retain.release
+        self.retain
+         # the originally installed finalizer will be using the original (zero) value of ptr
+        ObjectSpace.define_finalizer(self, self.class.finalize(self.ptr))
       end
       @unsaved_password = nil
       update_self_from_dictionary(cf_dict)
