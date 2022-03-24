@@ -109,7 +109,7 @@ module Keychain
 
       data = CF::Data.new(data_ptr.read_pointer)
       result = data.to_s
-      data.release
+      data
       result
     end
   end

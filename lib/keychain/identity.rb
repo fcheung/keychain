@@ -26,7 +26,7 @@ module Keychain
       status = Sec.SecIdentityCopyCertificate(self, certificate_ref)
       Sec.check_osstatus(status)
 
-      Certificate.new(certificate_ref.read_pointer).release
+      Certificate.new(certificate_ref.read_pointer)
     end
 
     def private_key
@@ -34,7 +34,7 @@ module Keychain
       status = Sec.SecIdentityCopyPrivateKey(self, key_ref)
       Sec.check_osstatus(status)
 
-      Key.new(key_ref.read_pointer).release
+      Key.new(key_ref.read_pointer)
     end
 
     def pkcs12(passphrase = '')
@@ -48,7 +48,7 @@ module Keychain
 
       data = CF::Data.new(data_ptr.read_pointer)
       result = OpenSSL::PKCS12.new(data.to_s, passphrase)
-      data.release
+      data
       result
     end
   end
