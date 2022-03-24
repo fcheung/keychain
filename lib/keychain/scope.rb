@@ -107,7 +107,7 @@ class Keychain::Scope
       return []
     end
     Sec.check_osstatus(status)
-    result = CF::Base.typecast(result.read_pointer).release_on_gc
+    result = CF::Base.typecast(result.read_pointer).release
     unless result.is_a?(CF::Array)
       result = CF::Array.immutable([result])
     end

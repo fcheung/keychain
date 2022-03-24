@@ -85,7 +85,7 @@ module Keychain
                                         Sec::Query::CLASS => self.klass,
                                         Sec::Query::RETURN_DATA => true}.to_cf, out_buffer)
       Sec.check_osstatus(status)
-      CF::Base.typecast(out_buffer.read_pointer).release_on_gc.to_s
+      CF::Base.typecast(out_buffer.read_pointer).release.to_s
     end
 
     # Attempts to update the keychain with any changes made to the item
@@ -99,7 +99,7 @@ module Keychain
       else
         cf_dict = create(options)
         self.ptr = cf_dict[Sec::Value::REF].to_ptr
-        self.retain.release_on_gc
+        self.retain.release
       end
       @unsaved_password = nil
       update_self_from_dictionary(cf_dict)

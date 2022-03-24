@@ -61,7 +61,7 @@ module Keychain
       list = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainCopySearchList(list)
       Sec.check_osstatus(status)
-      ruby_list = CF::Base.typecast(list.read_pointer).release_on_gc.to_ruby
+      ruby_list = CF::Base.typecast(list.read_pointer).release.to_ruby
       ruby_list << self unless ruby_list.include?(self)
       status = Sec.SecKeychainSetSearchList(CF::Array.immutable(ruby_list))
       Sec.check_osstatus(status)
@@ -136,12 +136,12 @@ module Keychain
       key_params[:accessRef] = access
 
       # Import item to the keychain
-      cf_data = CF::Data.from_string(input).release_on_gc
+      cf_data = CF::Data.from_string(input).release
       cf_array = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
       access.release
       Sec.check_osstatus status
-      item_array = CF::Base.typecast(cf_array.read_pointer).release_on_gc
+      item_array = CF::Base.typecast(cf_array.read_pointer).release
 
       item_array.to_ruby
     end
@@ -248,7 +248,7 @@ module Keychain
         status = Sec.SecTrustedApplicationCreateFromPath(
           path.encode(Encoding::UTF_8), trusted_app_buffer)
         Sec.check_osstatus(status)
-        CF::Base.typecast(trusted_app_buffer.read_pointer).release_on_gc
+        CF::Base.typecast(trusted_app_buffer.read_pointer).release
       end
       trusted_app_array.to_cf
     end

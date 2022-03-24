@@ -44,7 +44,7 @@ module Keychain
       status = Sec.SecCertificateCopyPublicKey(self, key_ref)
       Sec.check_osstatus(status)
 
-      Key.new(key_ref.read_pointer).release_on_gc
+      Key.new(key_ref.read_pointer).release
     end
 
     def x509
