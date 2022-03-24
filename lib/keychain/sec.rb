@@ -151,7 +151,7 @@ module Sec
       out = FFI::MemoryPointer.new :pointer
       status = Sec.SecKeychainItemCopyKeychain(self,out)
       Sec.check_osstatus(status)
-      CF::Base.new(out.read_pointer).release_on_gc
+      CF::Base.new(out.read_pointer)
     end
 
     def load_attributes
@@ -163,7 +163,7 @@ module Sec
                                         Sec::Query::RETURN_REF => false}.to_cf, result)
       Sec.check_osstatus(status)
 
-      cf_dict = CF::Base.typecast(result.read_pointer).release_on_gc
+      cf_dict = CF::Base.typecast(result.read_pointer)
       update_self_from_dictionary(cf_dict)
     end
   end

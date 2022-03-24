@@ -36,7 +36,7 @@ module Keychain
       end
 
       Sec.check_osstatus(status)
-      Keychain.new(out_buffer.read_pointer).release_on_gc
+      Keychain.new(out_buffer.read_pointer)
     end
 
     # Gets the default keychain object ( SecKeychainCopyDefault )
@@ -48,7 +48,7 @@ module Keychain
       status = Sec.SecKeychainCopyDefault(out_buffer);
       Sec.check_osstatus(status)
 
-      Keychain.new(out_buffer.read_pointer).release_on_gc
+      Keychain.new(out_buffer.read_pointer)
     end
 
     # Opens the keychain file at the specified path and adds it to the keychain search path ( SecKeychainOpen )
@@ -63,7 +63,7 @@ module Keychain
       out_buffer = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecKeychainOpen(path,out_buffer);
       Sec.check_osstatus(status)
-      Keychain.new(out_buffer.read_pointer).release_on_gc
+      Keychain.new(out_buffer.read_pointer)
     end
 
     # Returns a scope for internet passwords contained in all keychains

@@ -44,7 +44,7 @@ module Keychain
       status = Sec.SecCertificateCopyPublicKey(self, key_ref)
       Sec.check_osstatus(status)
 
-      Key.new(key_ref.read_pointer).release_on_gc
+      Key.new(key_ref.read_pointer)
     end
 
     def x509
@@ -52,7 +52,6 @@ module Keychain
       data = CF::Data.new(data_ptr)
 
       result = OpenSSL::X509::Certificate.new(data.to_s)
-      data.release
       result
     end
   end

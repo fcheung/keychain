@@ -85,7 +85,7 @@ module Keychain
                                         Sec::Query::CLASS => self.klass,
                                         Sec::Query::RETURN_DATA => true}.to_cf, out_buffer)
       Sec.check_osstatus(status)
-      CF::Base.typecast(out_buffer.read_pointer).release_on_gc.to_s
+      CF::Base.typecast(out_buffer.read_pointer).to_s
     end
 
     # Attempts to update the keychain with any changes made to the item
