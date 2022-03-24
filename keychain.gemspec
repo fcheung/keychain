@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.2'
 
   s.add_runtime_dependency "ffi"
-  s.add_runtime_dependency "corefoundation", "~> 0.2.0"
+  s.add_runtime_dependency "og-corefoundation", "~> 0.2.0"
   s.add_development_dependency "rspec", '~> 3.3', '>= 3.3.0'
   s.add_development_dependency "rake", '~> 13'
   s.add_development_dependency "yard", '~> 0.9.11'
