@@ -136,7 +136,7 @@ module Keychain
       key_params[:accessRef] = access
 
       # Import item to the keychain
-      cf_data = CF::Data.from_string(input).release_on_gc
+      cf_data = CF::Data.from_string(input)
       cf_array = FFI::MemoryPointer.new(:pointer)
       status = Sec.SecItemImport(cf_data, nil, :kSecFormatUnknown, :kSecItemTypeUnknown, :kSecItemPemArmour, key_params, self, cf_array)
       access.release

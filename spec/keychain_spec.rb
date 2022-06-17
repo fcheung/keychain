@@ -45,14 +45,21 @@ describe Keychain do
 
     context 'no password supplied' do
       #we have to stub this out as it would trigger a dialog box prompting for a password
+      let(:result) do
+        instance_double(Keychain::Keychain)
+      end
+
       it 'should create a keychain by prompting the user' do
         #we can't just use a kind_of matcher becaue FFI::Pointer#== raises an exception
         #when compared to non pointer values
-        mock_pointer = double(FFI::MemoryPointer, :read_pointer => 0)
+        mock_pointer = double(FFI::MemoryPointer, :read_pointer => 123456)
         allow(FFI::MemoryPointer).to receive(:new).with(:pointer).and_return(mock_pointer)
 
         expect(Sec).to receive('SecKeychainCreate').with('akeychain', 0, nil, 1, nil,mock_pointer).and_return(0)
-        Keychain.create('akeychain')
+
+        expect(Keychain::Keychain).to receive(:new).with(mock_pointer.read_pointer).and_return(result)
+        expect(result).to receive(:release_on_gc).and_return(result)
+        expect(Keychain.create('akeychain')).to eq(result)
       end
     end
   end
