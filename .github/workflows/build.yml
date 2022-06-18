@@ -2,9 +2,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ master switch-cf-gem ]
+    branches: [ master]
   pull_request:
-    branches: [ master switch-cf-gem ]
+    branches: [ master ]
 jobs:
   build:
     runs-on: macos-latest
