@@ -27,6 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake", '~> 13'
   s.add_development_dependency "yard", '~> 0.9.11'
   s.add_development_dependency "redcarpet", '~>3.2', '>= 3.2.3'
-
+  s.metadata = { "rubygems_mfa_required" => "true" }
 end
 
